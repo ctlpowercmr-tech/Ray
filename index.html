@@ -3,362 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rayz Security - Solutions de Sécurité Ultra-Modernes</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Rayz.com - Solutions de Sécurité Innovantes</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230096D6'/><circle cx='50' cy='50' r='30' fill='white'/><path d='M40 40L60 50L40 60Z' fill='%230096D6'/></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <meta name="theme-color" content="#0066ff">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Système de Maintenance -->
-    <div id="maintenance-banner" class="maintenance-banner">
-        <div class="maintenance-content">
-            <i class="fas fa-tools"></i>
-            <span id="maintenance-message">Site en maintenance - Revenez bientôt</span>
+    <!-- Header -->
+    <header id="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img id="site-logo" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230096D6'/><circle cx='50' cy='50' r='30' fill='white'/><path d='M40 40L60 50L40 60Z' fill='%230096D6'/></svg>" alt="Rayz.com Logo">
+                    <h1 id="site-name">Rayz.com</h1>
+                </div>
+                <div class="mobile-toggle" id="mobile-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <nav id="nav">
+                    <ul>
+                        <li><a href="#home">Accueil</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#projects">Projets</a></li>
+                        <li><a href="#about">À propos</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="admin.html" class="admin-link">Admin</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Promotion Banner -->
+    <div id="promotion-banner" class="promotion-banner" style="display: none;">
+        <div class="container">
+            <span id="promotion-text"></span>
+            <button id="close-promotion" class="close-promotion">&times;</button>
         </div>
     </div>
 
-    <!-- Navigation 3D -->
-    <nav class="nav-3d">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <div class="logo-container">
-                    <div class="logo-icon">
-                        <i class="fas fa-shield-virus"></i>
-                    </div>
-                    <span class="logo-text">Rayz Security</span>
-                </div>
-            </div>
-            
-            <div class="nav-menu-3d">
-                <div class="nav-item" data-section="home">
-                    <div class="nav-cube">
-                        <div class="cube-face front">Accueil</div>
-                        <div class="cube-face top"><i class="fas fa-home"></i></div>
-                    </div>
-                </div>
-                <div class="nav-item" data-section="services">
-                    <div class="nav-cube">
-                        <div class="cube-face front">Services</div>
-                        <div class="cube-face top"><i class="fas fa-cogs"></i></div>
-                    </div>
-                </div>
-                <div class="nav-item" data-section="projets">
-                    <div class="nav-cube">
-                        <div class="cube-face front">Projets</div>
-                        <div class="cube-face top"><i class="fas fa-briefcase"></i></div>
-                    </div>
-                </div>
-                <div class="nav-item" data-section="blog">
-                    <div class="nav-cube">
-                        <div class="cube-face front">Blog</div>
-                        <div class="cube-face top"><i class="fas fa-blog"></i></div>
-                    </div>
-                </div>
-                <div class="nav-item" data-section="contact">
-                    <div class="nav-cube">
-                        <div class="cube-face front">Contact</div>
-                        <div class="cube-face top"><i class="fas fa-envelope"></i></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="nav-actions">
-                <button class="btn-admin" onclick="window.location.href='admin.html'">
-                    <i class="fas fa-cog"></i>
-                    <span>Admin</span>
-                </button>
-                <div class="mobile-trigger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section avec Animation 3D -->
-    <section id="home" class="hero-3d">
-        <div class="hero-particles" id="particles"></div>
-        <div class="hero-content">
-            <div class="hero-text-3d">
-                <h1 class="hero-title-3d">
-                    <span class="title-line" data-text="SÉCURITÉ">SÉCURITÉ</span>
-                    <span class="title-line" data-text="INTELLIGENTE">INTELLIGENTE</span>
-                    <span class="title-line" data-text="CONNECTÉE">CONNECTÉE</span>
-                </h1>
-                <p class="hero-description-3d">
-                    Solutions de surveillance et de connectivité ultra-modernes pour un monde en constante évolution
-                </p>
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <span class="stat-number" data-target="500">0</span>
-                        <span class="stat-label">Projets Réalisés</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" data-target="98">0</span>
-                        <span class="stat-label">% Satisfaction</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" data-target="24">0</span>
-                        <span class="stat-label">/7 Support</span>
-                    </div>
-                </div>
-                <div class="hero-actions">
-                    <button class="btn-primary-3d" onclick="scrollToSection('services')">
-                        <span>Découvrir</span>
-                        <div class="btn-ripple"></div>
-                    </button>
-                    <button class="btn-secondary-3d" onclick="scrollToSection('projets')">
-                        <span>Nos Réalisations</span>
-                    </button>
-                </div>
-            </div>
-            <div class="hero-visual-3d">
-                <div class="hologram-container">
-                    <div class="hologram-item" data-icon="video">
-                        <i class="fas fa-video"></i>
-                        <span>Surveillance HD</span>
-                    </div>
-                    <div class="hologram-item" data-icon="satellite">
-                        <i class="fas fa-satellite-dish"></i>
-                        <span>Starlink Pro</span>
-                    </div>
-                    <div class="hologram-item" data-icon="shield">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>Sécurité 24/7</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="scroll-indicator-3d">
-            <div class="scroll-line"></div>
+    <!-- Hero Section avec Carousel -->
+    <section class="hero" id="home">
+        <div class="hero-carousel" id="hero-carousel">
+            <!-- Les slides seront chargées dynamiquement -->
         </div>
     </section>
 
-    <!-- Services Section avec Grid Bento -->
-    <section id="services" class="services-3d">
+    <!-- Services Section -->
+    <section class="section services" id="services">
         <div class="container">
-            <div class="section-header-3d">
-                <h2 class="section-title-3d">Nos Solutions</h2>
-                <p class="section-subtitle-3d">Technologies de pointe pour votre sécurité</p>
+            <div class="section-header">
+                <h2 id="services-title">Nos Services</h2>
+                <p id="services-subtitle">Découvrez notre gamme complète de services de sécurité et de connectivité</p>
             </div>
-            <div class="bento-grid">
-                <div class="bento-item bento-main" data-service="surveillance">
-                    <div class="bento-content">
-                        <div class="bento-icon">
-                            <i class="fas fa-video"></i>
-                        </div>
-                        <h3>Vidéosurveillance Ultra-HD</h3>
-                        <p>Systèmes de caméras 4K/8K avec IA intégrée</p>
-                        <div class="bento-features">
-                            <span>Reconnaissance faciale</span>
-                            <span>Analyse comportementale</span>
-                            <span>Stockage cloud sécurisé</span>
-                        </div>
-                    </div>
-                    <div class="bento-glow"></div>
-                </div>
-                
-                <div class="bento-item" data-service="starlink">
-                    <div class="bento-content">
-                        <div class="bento-icon">
-                            <i class="fas fa-satellite"></i>
-                        </div>
-                        <h3>Starlink Enterprise</h3>
-                        <p>Connexion satellite ultra-rapide</p>
-                    </div>
-                </div>
-                
-                <div class="bento-item" data-service="alarm">
-                    <div class="bento-content">
-                        <div class="bento-icon">
-                            <i class="fas fa-bell"></i>
-                        </div>
-                        <h3>Alarmes Intelligentes</h3>
-                        <p>Détection proactive avec IA</p>
+            <div class="services-grid" id="services-grid">
+                <!-- Les services seront chargés dynamiquement -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="section projects" id="projects">
+        <div class="container">
+            <div class="section-header">
+                <h2 id="projects-title">Nos Projets</h2>
+                <p id="projects-subtitle">Découvrez nos réalisations récentes en matière de sécurité et de connectivité</p>
+            </div>
+            <div class="projects-filter" id="projects-filter">
+                <!-- Les filtres seront chargés dynamiquement -->
+            </div>
+            <div class="projects-grid" id="projects-grid">
+                <!-- Les projets seront chargés dynamiquement -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section about" id="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 id="about-title">À Propos de Rayz.com</h2>
+                    <p id="about-text-1">Fondée en 2018, Rayz.com est devenue un leader dans le domaine des solutions de sécurité et de connectivité innovantes.</p>
+                    <p id="about-text-2">Nous nous spécialisons dans l'installation de systèmes de vidéosurveillance modernes, de solutions Starlink, de systèmes d'alarme et de contrôle d'accès.</p>
+                    <div class="about-stats" id="about-stats">
+                        <!-- Les statistiques seront chargées dynamiquement -->
                     </div>
                 </div>
-                
-                <div class="bento-item" data-service="presence">
-                    <div class="bento-content">
-                        <div class="bento-icon">
-                            <i class="fas fa-wifi"></i>
-                        </div>
-                        <h3>IoT & Domotique</h3>
-                        <p>Automatisation intelligente</p>
-                    </div>
-                </div>
-                
-                <div class="bento-item bento-wide" data-service="analysis">
-                    <div class="bento-content">
-                        <div class="bento-icon">
-                            <i class="fas fa-brain"></i>
-                        </div>
-                        <h3>Analyse Prédictive</h3>
-                        <p>Prédiction des incidents avant qu'ils ne surviennent</p>
-                    </div>
+                <div class="about-image">
+                    <img id="about-image" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='400' viewBox='0 0 500 400'><rect width='500' height='400' rx='15' fill='%23F8FAFC'/><rect x='20' y='20' width='460' height='360' rx='10' fill='%23E5E7EB'/><circle cx='250' cy='150' r='80' fill='%230096D6'/><path d='M210 150L250 110L290 150H210Z' fill='white'/><path d='M290 150L250 190L210 150H290Z' fill='white'/><rect x='150' y='240' width='200' height='100' rx='10' fill='%23E5E7EB'/><rect x='170' y='260' width='160' height='60' rx='5' fill='%23F4F6F8'/></svg>" alt="Équipe Rayz.com">
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Projets Section avec Showcase 3D -->
-    <section id="projets" class="projets-3d">
+    <!-- Contact Section -->
+    <section class="section contact" id="contact">
         <div class="container">
-            <div class="section-header-3d">
-                <h2 class="section-title-3d">Nos Réalisations</h2>
-                <p class="section-subtitle-3d">Projets d'excellence</p>
+            <div class="section-header">
+                <h2 id="contact-title">Contactez-Nous</h2>
+                <p id="contact-subtitle">Prêt à sécuriser votre espace? Contactez notre équipe pour une consultation gratuite</p>
             </div>
-            <div class="showcase-3d">
-                <div class="showcase-item active" data-project="1">
-                    <div class="showcase-visual">
-                        <div class="project-card-3d">
-                            <div class="card-face front">
-                                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800" alt="Centre Commercial">
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3 id="contact-info-title">Discutons de votre projet</h3>
+                    <p id="contact-info-text">Notre équipe d'experts est disponible pour répondre à toutes vos questions et vous accompagner dans la réalisation de votre projet de sécurité.</p>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
                             </div>
-                            <div class="card-face back">
-                                <div class="project-info">
-                                    <h3>Centre Commercial Secure</h3>
-                                    <p>Installation complète de 64 caméras 4K avec centre de monitoring IA</p>
-                                    <div class="project-tech">
-                                        <span>4K Cameras</span>
-                                        <span>IA Analytics</span>
-                                        <span>Cloud Storage</span>
-                                    </div>
-                                </div>
+                            <div>
+                                <h4>Adresse</h4>
+                                <p id="contact-address">123 Avenue de la Sécurité, 75000 Paris</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <h4>Téléphone</h4>
+                                <p id="contact-phone">+33 1 23 45 67 89</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4>Email</h4>
+                                <p id="contact-email">contact@rayz.com</p>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="showcase-navigation">
-                    <button class="nav-btn active" data-slide="1">01</button>
-                    <button class="nav-btn" data-slide="2">02</button>
-                    <button class="nav-btn" data-slide="3">03</button>
-                    <button class="nav-btn" data-slide="4">04</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Blog Section Moderne -->
-    <section id="blog" class="blog-3d">
-        <div class="container">
-            <div class="section-header-3d">
-                <h2 class="section-title-3d">Actualités</h2>
-                <p class="section-subtitle-3d">Restez informé des dernières innovations</p>
-            </div>
-            <div class="blog-grid-3d">
-                <article class="blog-card-3d">
-                    <div class="blog-image-3d">
-                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600" alt="Article 1">
-                        <div class="blog-date-3d">15 Nov 2025</div>
-                    </div>
-                    <div class="blog-content-3d">
-                        <h3>L'IA révolutionne la sécurité</h3>
-                        <p>Découvrez comment l'intelligence artificielle transforme la surveillance moderne...</p>
-                        <a href="#" class="blog-link-3d">Lire la suite</a>
-                    </div>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section avec Formulaire 3D -->
-    <section id="contact" class="contact-3d">
-        <div class="container">
-            <div class="section-header-3d">
-                <h2 class="section-title-3d">Contact</h2>
-                <p class="section-subtitle-3d">Prêt à sécuriser votre avenir ?</p>
-            </div>
-            <div class="contact-grid-3d">
-                <div class="contact-info-3d">
-                    <div class="info-item-3d">
-                        <div class="info-icon-3d">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div class="info-content-3d">
-                            <h4>Adresse</h4>
-                            <p>Paris, France</p>
-                        </div>
-                    </div>
-                    <div class="info-item-3d">
-                        <div class="info-icon-3d">
-                            <i class="fas fa-phone"></i>
-                        </div>
-                        <div class="info-content-3d">
-                            <h4>Téléphone</h4>
-                            <p>+33 1 23 45 67 89</p>
-                        </div>
-                    </div>
-                    <div class="info-item-3d">
-                        <div class="info-icon-3d">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="info-content-3d">
-                            <h4>Email</h4>
-                            <p>contact@rayz.com</p>
-                        </div>
+                    <div class="social-links" id="social-links">
+                        <!-- Les liens sociaux seront chargés dynamiquement -->
                     </div>
                 </div>
-                <form class="contact-form-3d" id="contactForm">
-                    <div class="form-group-3d">
-                        <input type="text" placeholder="Votre nom" required>
-                        <div class="input-line"></div>
-                    </div>
-                    <div class="form-group-3d">
-                        <input type="email" placeholder="Votre email" required>
-                        <div class="input-line"></div>
-                    </div>
-                    <div class="form-group-3d">
-                        <textarea placeholder="Votre message" rows="4" required></textarea>
-                        <div class="input-line"></div>
-                    </div>
-                    <button type="submit" class="btn-submit-3d">
-                        <span>Envoyer</span>
-                        <div class="btn-loader"></div>
-                    </button>
-                </form>
+                <div class="contact-form">
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label for="name">Nom complet</label>
+                            <input type="text" id="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Adresse email</label>
+                            <input type="email" id="email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Téléphone</label>
+                            <input type="tel" id="phone" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="service">Service intéressé</label>
+                            <select id="service" class="form-control">
+                                <option value="">Sélectionnez un service</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" class="form-control" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Envoyer le message</button>
+                        <a href="https://shop.thetic.de" target="_blank" class="btn btn-shop" style="margin-top: 20px; display: inline-block; width: 100%; text-align: center;"><i class="fas fa-shopping-cart"></i> Visiter notre boutique</a>
+                    </form>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="footer-3d">
+    <footer>
         <div class="container">
-            <div class="footer-content-3d">
-                <div class="footer-brand-3d">
-                    <div class="logo-container">
-                        <i class="fas fa-shield-virus"></i>
-                        <span>Rayz Security</span>
-                    </div>
-                    <p>Sécurité connectée pour un monde moderne</p>
-                </div>
-                <div class="footer-links-3d">
-                    <div class="link-group">
-                        <h4>Services</h4>
-                        <a href="#services">Surveillance</a>
-                        <a href="#services">Starlink</a>
-                        <a href="#services">Alarmes</a>
-                    </div>
-                    <div class="link-group">
-                        <h4>Entreprise</h4>
-                        <a href="#apropos">À propos</a>
-                        <a href="#projets">Projets</a>
-                        <a href="#blog">Blog</a>
-                    </div>
-                </div>
+            <div class="footer-content" id="footer-content">
+                <!-- Le contenu du footer sera chargé dynamiquement -->
             </div>
-            <div class="footer-bottom-3d">
-                <p>&copy; 2025 Rayz Security. Tous droits réservés.</p>
+            <div class="copyright">
+                <p id="copyright-text">&copy; 2023 Rayz.com. Tous droits réservés.</p>
             </div>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/ScrollTrigger.min.js"></script>
+    <!-- Modal pour les projets -->
+    <div class="modal" id="projectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Détails du projet</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="project-carousel">
+                    <div class="project-carousel-slide active">
+                        <img id="modal-image" src="" alt="Projet détaillé">
+                        <div class="project-carousel-caption" id="modal-caption">Image 1: Vue d'ensemble du système installé</div>
+                    </div>
+                    <div class="project-carousel-nav">
+                        <div class="project-carousel-dot active" data-slide="0"></div>
+                    </div>
+                </div>
+                <div class="project-details">
+                    <h3 id="projectDetailTitle">Surveillance Résidentielle Premium</h3>
+                    <p id="projectDetailDescription">Installation complète d'un système de surveillance 4K avec détection intelligente pour une villa de luxe.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
 </html>
