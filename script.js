@@ -1,286 +1,261 @@
-class Distributeur {
-    constructor() {
-        this.panier = [];
-        this.transactionEnCours = null;
-        this.timerExpiration = null;
-        this.API_URL = CONFIG.API_URL;
-        
-        this.init();
-    }
-    
-    async init() {
-        await this.verifierConnexionAPI();
-        this.afficherBoissons();
-        this.chargerSolde();
-        this.setupEventListeners();
-        
-        // Vérifier périodiquement le statut des transactions
-        setInterval(() => this.verifierStatutTransaction(), 2000);
-    }
-    
-    async verifierConnexionAPI() {
-        try {
-            const response = await fetch(`${this.API_URL}/api/health`);
-            if (!response.ok) throw new Error('API non disponible');
-            console.log('✅ Connexion API établie');
-        } catch (error) {
-            console.error('❌ Erreur connexion API:', error);
-            alert('Impossible de se connecter au serveur. Vérifiez votre connexion.');
-        }
-    }
-    
-    afficherBoissons() {
-        const grid = document.getElementById('boissons-grid');
-        grid.innerHTML = '';
-        
-        BOISSONS.forEach(boisson => {
-            const card = document.createElement('div');
-            card.className = 'boisson-card';
-            card.innerHTML = `
-                <div class="boisson-image" style="background: linear-gradient(45deg, ${boisson.couleur}, #ffffff)">
-                    ${boisson.icone}
-                </div>
-                <div class="boisson-nom">${boisson.nom}</div>
-                <div class="boisson-prix">${boisson.prix.toFixed(2)}€</div>
-            `;
-            
-            card.addEventListener('click', () => this.ajouterAuPanier(boisson));
-            grid.appendChild(card);
-        });
-    }
-    
-    ajouterAuPanier(boisson) {
-        if (this.panier.length >= 2) {
-            alert('Vous ne pouvez sélectionner que 2 boissons maximum');
-            return;
-        }
-        
-        if (this.panier.find(item => item.id === boisson.id)) {
-            alert('Cette boisson est déjà dans votre sélection');
-            return;
-        }
-        
-        this.panier.push(boisson);
-        this.mettreAJourPanier();
-        this.mettreAJourBoutons();
-    }
-    
-    retirerDuPanier(boissonId) {
-        this.panier = this.panier.filter(item => item.id !== boissonId);
-        this.mettreAJourPanier();
-        this.mettreAJourBoutons();
-    }
-    
-    mettreAJourPanier() {
-        const panierElement = document.getElementById('panier');
-        const totalElement = document.getElementById('total-panier');
-        
-        if (this.panier.length === 0) {
-            panierElement.innerHTML = '<div class="vide">Aucune boisson sélectionnée</div>';
-        } else {
-            panierElement.innerHTML = '';
-            this.panier.forEach(boisson => {
-                const item = document.createElement('div');
-                item.className = 'item-panier';
-                item.innerHTML = `
-                    <span>${boisson.icone} ${boisson.nom}</span>
-                    <span>${boisson.prix.toFixed(2)}€</span>
-                    <button onclick="distributeur.retirerDuPanier(${boisson.id})" class="btn-retirer">✕</button>
-                `;
-                panierElement.appendChild(item);
-            });
-        }
-        
-        const total = this.panier.reduce((sum, boisson) => sum + boisson.prix, 0);
-        totalElement.textContent = total.toFixed(2);
-    }
-    
-    mettreAJourBoutons() {
-        const btnPayer = document.getElementById('btn-payer');
-        const btnModifier = document.getElementById('btn-modifier');
-        
-        btnPayer.disabled = this.panier.length === 0;
-        btnModifier.disabled = this.panier.length === 0;
-    }
-    
-    setupEventListeners() {
-        document.getElementById('btn-payer').addEventListener('click', () => this.demarrerPaiement());
-        document.getElementById('btn-modifier').addEventListener('click', () => this.modifierCommande());
-        document.getElementById('annuler-paiement').addEventListener('click', () => this.annulerPaiement());
-    }
-    
-    async demarrerPaiement() {
-        const total = this.panier.reduce((sum, boisson) => sum + boisson.prix, 0);
-        
-        try {
-            const response = await fetch(`${this.API_URL}/api/transaction`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    montant: total,
-                    boissons: this.panier
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                this.transactionEnCours = result.data;
-                this.afficherQRCode(result.data);
-                this.demarrerTimerExpiration();
-            } else {
-                throw new Error(result.error || 'Erreur lors de la création de la transaction');
-            }
-        } catch (error) {
-            console.error('Erreur:', error);
-            alert('Erreur: ' + error.message);
-        }
-    }
-    
-    afficherQRCode(transaction) {
-        const paiementSection = document.getElementById('paiement-section');
-        const qrCodeElement = document.getElementById('qr-code');
-        const transactionIdElement = document.getElementById('transaction-id');
-        const montantTransactionElement = document.getElementById('montant-transaction');
-        
-        // Afficher la section paiement
-        paiementSection.style.display = 'block';
-        
-        // Mettre à jour les informations de transaction
-        transactionIdElement.textContent = transaction.id;
-        montantTransactionElement.textContent = transaction.montant.toFixed(2);
-        
-        // Générer le QR code avec les données de transaction
-        qrCodeElement.innerHTML = '';
-        const qrCode = new QRCode(qrCodeElement, {
-            text: JSON.stringify({
-                transactionId: transaction.id,
-                montant: transaction.montant,
-                type: 'paiement-boisson',
-                apiUrl: this.API_URL
-            }),
-            width: 200,
-            height: 200,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
-        
-        // Faire défiler jusqu'au QR code
-        paiementSection.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    demarrerTimerExpiration() {
-        if (this.timerExpiration) clearInterval(this.timerExpiration);
-        
-        const timerElement = document.getElementById('expiration-timer');
-        let tempsRestant = 10 * 60; // 10 minutes en secondes
-        
-        this.timerExpiration = setInterval(() => {
-            tempsRestant--;
-            const minutes = Math.floor(tempsRestant / 60);
-            const secondes = tempsRestant % 60;
-            timerElement.textContent = `${minutes}:${secondes.toString().padStart(2, '0')}`;
-            
-            if (tempsRestant <= 0) {
-                clearInterval(this.timerExpiration);
-                this.transactionExpiree();
-            }
-        }, 1000);
-    }
-    
-    transactionExpiree() {
-        const statutElement = document.getElementById('statut-paiement');
-        statutElement.innerHTML = '❌ Transaction expirée';
-        statutElement.className = 'statut-paiement error';
-    }
-    
-    async verifierStatutTransaction() {
-        if (!this.transactionEnCours) return;
-        
-        try {
-            const response = await fetch(`${this.API_URL}/api/transaction/${this.transactionEnCours.id}`);
-            const result = await response.json();
-            
-            if (result.success) {
-                const transaction = result.data;
-                const statutElement = document.getElementById('statut-paiement');
-                
-                if (transaction.statut === 'paye') {
-                    statutElement.innerHTML = '✅ Paiement réussi! Distribution en cours...';
-                    statutElement.className = 'statut-paiement success';
-                    
-                    // Mettre à jour le solde du distributeur
-                    this.soldeDistributeur += transaction.montant;
-                    document.getElementById('solde-distributeur').textContent = this.soldeDistributeur.toFixed(2);
-                    
-                    if (this.timerExpiration) clearInterval(this.timerExpiration);
-                    
-                    // Réinitialiser après 5 secondes
-                    setTimeout(() => {
-                        this.reinitialiserApresPaiement();
-                    }, 5000);
-                } else if (transaction.statut === 'annule') {
-                    statutElement.innerHTML = '❌ Transaction annulée';
-                    statutElement.className = 'statut-paiement error';
-                    if (this.timerExpiration) clearInterval(this.timerExpiration);
-                }
-            }
-        } catch (error) {
-            console.error('Erreur lors de la vérification du statut:', error);
-        }
-    }
-    
-    reinitialiserApresPaiement() {
-        this.panier = [];
-        this.transactionEnCours = null;
-        this.timerExpiration = null;
-        
-        document.getElementById('paiement-section').style.display = 'none';
-        document.getElementById('statut-paiement').className = 'statut-paiement';
-        document.getElementById('statut-paiement').innerHTML = '<div class="loader"></div><span>En attente de paiement...</span>';
-        
-        this.mettreAJourPanier();
-        this.mettreAJourBoutons();
-    }
-    
-    modifierCommande() {
-        this.panier = [];
-        this.mettreAJourPanier();
-        this.mettreAJourBoutons();
-    }
-    
-    async annulerPaiement() {
-        if (this.transactionEnCours) {
-            try {
-                await fetch(`${this.API_URL}/api/transaction/${this.transactionEnCours.id}/annuler`, {
-                    method: 'POST'
-                });
-            } catch (error) {
-                console.error('Erreur lors de l\'annulation:', error);
-            }
-        }
-        
-        if (this.timerExpiration) clearInterval(this.timerExpiration);
-        this.reinitialiserApresPaiement();
-    }
-    
-    async chargerSolde() {
-        try {
-            const response = await fetch(`${this.API_URL}/api/solde/distributeur`);
-            const result = await response.json();
-            
-            if (result.success) {
-                this.soldeDistributeur = result.solde;
-                document.getElementById('solde-distributeur').textContent = this.soldeDistributeur.toFixed(2);
-            }
-        } catch (error) {
-            console.error('Erreur lors du chargement du solde:', error);
-        }
+// Navigation
+const hamburger = document.querySelector('.hamburger');
+const navMenu = document.querySelector('.nav-menu');
+
+hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navMenu.classList.toggle('active');
+});
+
+document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
+    hamburger.classList.remove('active');
+    navMenu.classList.remove('active');
+}));
+
+// Smooth scrolling
+function scrollToSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
     }
 }
 
-// Initialiser le distributeur
-const distributeur = new Distributeur();
+// Navbar scroll effect
+window.addEventListener('scroll', () => {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 100) {
+        navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+        navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
+    } else {
+        navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+        navbar.style.boxShadow = 'none';
+    }
+});
+
+// Intersection Observer for animations
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -100px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// Observe all elements with data-aos attribute
+document.querySelectorAll('[data-aos]').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    el.style.transition = 'all 0.6s ease';
+    observer.observe(el);
+});
+
+// Project modal functionality
+function openProjet(projetId) {
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Détails du Projet</h2>
+            <p>Informations détaillées sur le projet ${projetId}</p>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal functionality
+    modal.querySelector('.modal-close').addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+        }
+    });
+}
+
+// Contact form handling
+document.querySelector('.contact-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    // Get form data
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    
+    // Show success message
+    const button = e.target.querySelector('button[type="submit"]');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> Message envoyé!';
+    button.style.background = 'var(--success-color)';
+    
+    // Reset form
+    e.target.reset();
+    
+    // Reset button after 3 seconds
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.style.background = '';
+    }, 3000);
+});
+
+// Add modal styles dynamically
+const modalStyles = `
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        max-width: 500px;
+        width: 90%;
+        position: relative;
+        animation: slideUp 0.3s ease;
+    }
+    
+    .modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 2rem;
+        cursor: pointer;
+        color: var(--text-light);
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+        from { transform: translateY(50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+`;
+
+// Add styles to head
+const styleSheet = document.createElement('style');
+styleSheet.textContent = modalStyles;
+document.head.appendChild(styleSheet);
+
+// Parallax effect for hero section
+window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    const hero = document.querySelector('.hero');
+    if (hero) {
+        hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+    }
+});
+
+// Counter animation for stats
+function animateCounter(element, target, duration = 2000) {
+    let start = 0;
+    const increment = target / (duration / 16);
+    
+    function updateCounter() {
+        start += increment;
+        if (start < target) {
+            element.textContent = Math.floor(start) + '+';
+            requestAnimationFrame(updateCounter);
+        } else {
+            element.textContent = target + '+';
+        }
+    }
+    
+    updateCounter();
+}
+
+// Trigger counter animation when stats section is visible
+const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const statNumbers = entry.target.querySelectorAll('.stat-number');
+            statNumbers.forEach(stat => {
+                const target = parseInt(stat.textContent);
+                animateCounter(stat, target);
+            });
+            statsObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.5 });
+
+const statsSection = document.querySelector('.stats');
+if (statsSection) {
+    statsObserver.observe(statsSection);
+}
+
+// Add hover effect to service cards
+document.querySelectorAll('.service-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+        card.style.transform = 'translateY(-10px) scale(1.02)';
+    });
+    
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'translateY(0) scale(1)';
+    });
+});
+
+// Typing effect for hero title
+function typeWriter(element, text, speed = 100) {
+    let i = 0;
+    element.innerHTML = '';
+    
+    function type() {
+        if (i < text.length) {
+            element.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        }
+    }
+    
+    type();
+}
+
+// Initialize typing effect when page loads
+window.addEventListener('load', () => {
+    const heroTitle = document.querySelector('.hero-title');
+    if (heroTitle) {
+        const originalText = heroTitle.textContent;
+        typeWriter(heroTitle, originalText, 50);
+    }
+});
+
+// Add loading animation
+window.addEventListener('load', () => {
+    document.body.classList.add('loaded');
+});
+
+// Add CSS for loading animation
+const loadingStyles = `
+    body {
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+    
+    body.loaded {
+        opacity: 1;
+    }
+`;
+
+const loadingStyleSheet = document.createElement('style');
+loadingStyleSheet.textContent = loadingStyles;
+document.head.appendChild(loadingStyleSheet);
