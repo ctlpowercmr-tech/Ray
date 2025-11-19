@@ -1,261 +1,278 @@
-// Navigation
-const hamburger = document.querySelector('.hamburger');
-const navMenu = document.querySelector('.nav-menu');
+// Configuration Three.js
+let scene, camera, renderer, particles;
+let mouseX = 0, mouseY = 0;
 
-hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    navMenu.classList.toggle('active');
+// Initialisation Three.js
+function initThreeJS() {
+    // Scene
+    scene = new THREE.Scene();
+    
+    // Camera
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 5;
+    
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+    
+    const particlesContainer = document.getElementById('particles');
+    if (particlesContainer) {
+        particlesContainer.appendChild(renderer.domElement);
+        
+        // Particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 1000;
+        const posArray = new Float32Array(particlesCount * 3);
+        
+        for(let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 10;
+        }
+        
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        
+        // Particles material
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.005,
+            color: 0x0066ff,
+            transparent: true,
+            opacity: 0.8
+        });
+        
+        particles = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particles);
+    }
+    
+    animate();
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    
+    if (particles) {
+        particles.rotation.x += 0.001;
+        particles.rotation.y += 0.002;
+        
+        // Mouse interaction
+        particles.rotation.x += mouseY * 0.0001;
+        particles.rotation.y += mouseX * 0.0001;
+    }
+    
+    renderer.render(scene, camera);
+}
+
+// Mouse tracking
+document.addEventListener('mousemove', (event) => {
+    mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+    mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
 });
 
-document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
-    hamburger.classList.remove('active');
-    navMenu.classList.remove('active');
-}));
+// Resize handler
+window.addEventListener('resize', () => {
+    if (camera && renderer) {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+});
+
+// GSAP Animations
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Three.js
+    initThreeJS();
+    
+    // GSAP ScrollTrigger
+    gsap.registerPlugin(ScrollTrigger);
+    
+    // Hero title animation
+    gsap.from('.hero-title-3d .title-line', {
+        duration: 1.5,
+        y: 100,
+        opacity: 0,
+        stagger: 0.2,
+        ease: "power4.out"
+    });
+    
+    // Hero stats animation
+    gsap.from('.hero-stats .stat-item', {
+        duration: 1,
+        y: 50,
+        opacity: 0,
+        stagger: 0.1,
+        delay: 0.5,
+        ease: "power2.out"
+    });
+    
+    // Bento grid animation
+    gsap.from('.bento-item', {
+        duration: 1,
+        scale: 0,
+        opacity: 0,
+        stagger: 0.1,
+        scrollTrigger: {
+            trigger: '.services-3d',
+            start: 'top 80%',
+            end: 'bottom 20%',
+            toggleActions: 'play none none reverse'
+        }
+    });
+    
+    // Counter animation
+    const counters = document.querySelectorAll('.stat-number');
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        gsap.to(counter, {
+            duration: 2,
+            innerHTML: target,
+            snap: { innerHTML: 1 },
+            ease: "power2.inOut",
+            delay: 1
+        });
+    });
+});
+
+// Navigation 3D effects
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('mouseenter', () => {
+        gsap.to(item.querySelector('.nav-cube'), {
+            duration: 0.3,
+            scale: 1.1,
+            ease: "power2.out"
+        });
+    });
+    
+    item.addEventListener('mouseleave', () => {
+        gsap.to(item.querySelector('.nav-cube'), {
+            duration: 0.3,
+            scale: 1,
+            ease: "power2.out"
+        });
+    });
+});
 
 // Smooth scrolling
 function scrollToSection(sectionId) {
     const section = document.getElementById(sectionId);
     if (section) {
-        section.scrollIntoView({ behavior: 'smooth' });
+        gsap.to(window, {
+            duration: 1.5,
+            scrollTo: section,
+            ease: "power2.inOut"
+        });
     }
 }
 
-// Navbar scroll effect
-window.addEventListener('scroll', () => {
-    const navbar = document.querySelector('.navbar');
-    if (window.scrollY > 100) {
-        navbar.style.background = 'rgba(255, 255, 255, 0.98)';
-        navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
-    } else {
-        navbar.style.background = 'rgba(255, 255, 255, 0.95)';
-        navbar.style.boxShadow = 'none';
-    }
+// Hologram effects
+document.querySelectorAll('.hologram-item').forEach(item => {
+    item.addEventListener('mouseenter', () => {
+        gsap.to(item, {
+            duration: 0.3,
+            y: -10,
+            ease: "power2.out"
+        });
+    });
+    
+    item.addEventListener('mouseleave', () => {
+        gsap.to(item, {
+            duration: 0.3,
+            y: 0,
+            ease: "power2.out"
+        });
+    });
 });
 
-// Intersection Observer for animations
+// Showcase navigation
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const slide = btn.getAttribute('data-slide');
+        
+        // Remove active class from all buttons
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Animate showcase items
+        gsap.to('.showcase-item', {
+            duration: 0.5,
+            opacity: 0,
+            scale: 0.8,
+            onComplete: () => {
+                // Here you would switch to the actual slide content
+                gsap.to('.showcase-item', {
+                    duration: 0.5,
+                    opacity: 1,
+                    scale: 1
+                });
+            }
+        });
+    });
+});
+
+// Contact form
+document.getElementById('contactForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const button = e.target.querySelector('.btn-submit-3d');
+    const originalText = button.innerHTML;
+    
+    // Loading animation
+    button.innerHTML = '<div class="btn-loader"></div>';
+    button.disabled = true;
+    
+    // Simulate form submission
+    setTimeout(() => {
+        button.innerHTML = '<i class="fas fa-check"></i> Message envoyé!';
+        button.style.background = 'var(--success-color)';
+        
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+            button.style.background = '';
+            e.target.reset();
+        }, 2000);
+    }, 1500);
+});
+
+// Maintenance banner check
+function checkMaintenanceStatus() {
+    const maintenanceBanner = document.getElementById('maintenance-banner');
+    const maintenanceMessage = document.getElementById('maintenance-message');
+    
+    // Simulate checking maintenance status from database
+    const isMaintenance = localStorage.getItem('maintenanceMode') === 'true';
+    const customMessage = localStorage.getItem('maintenanceMessage');
+    
+    if (isMaintenance) {
+        maintenanceBanner.classList.add('active');
+        if (customMessage) {
+            maintenanceMessage.textContent = customMessage;
+        }
+    }
+}
+
+// Initialize
+checkMaintenanceStatus();
+
+// Add smooth reveal for elements
 const observerOptions = {
     threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
+    rootMargin: '0px 0px -50px 0px'
 };
 
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+            gsap.to(entry.target, {
+                duration: 1,
+                y: 0,
+                opacity: 1,
+                ease: "power2.out"
+            });
         }
     });
 }, observerOptions);
 
-// Observe all elements with data-aos attribute
-document.querySelectorAll('[data-aos]').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(30px)';
-    el.style.transition = 'all 0.6s ease';
+// Observe elements
+document.querySelectorAll('.section-header-3d, .bento-item, .blog-card-3d').forEach(el => {
+    gsap.set(el, { y: 50, opacity: 0 });
     observer.observe(el);
 });
-
-// Project modal functionality
-function openProjet(projetId) {
-    // Create modal overlay
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.innerHTML = `
-        <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <h2>Détails du Projet</h2>
-            <p>Informations détaillées sur le projet ${projetId}</p>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    // Close modal functionality
-    modal.querySelector('.modal-close').addEventListener('click', () => {
-        document.body.removeChild(modal);
-    });
-    
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            document.body.removeChild(modal);
-        }
-    });
-}
-
-// Contact form handling
-document.querySelector('.contact-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    // Get form data
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData);
-    
-    // Show success message
-    const button = e.target.querySelector('button[type="submit"]');
-    const originalText = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-check"></i> Message envoyé!';
-    button.style.background = 'var(--success-color)';
-    
-    // Reset form
-    e.target.reset();
-    
-    // Reset button after 3 seconds
-    setTimeout(() => {
-        button.innerHTML = originalText;
-        button.style.background = '';
-    }, 3000);
-});
-
-// Add modal styles dynamically
-const modalStyles = `
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 2000;
-        animation: fadeIn 0.3s ease;
-    }
-    
-    .modal-content {
-        background: white;
-        padding: 2rem;
-        border-radius: 1rem;
-        max-width: 500px;
-        width: 90%;
-        position: relative;
-        animation: slideUp 0.3s ease;
-    }
-    
-    .modal-close {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        font-size: 2rem;
-        cursor: pointer;
-        color: var(--text-light);
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    @keyframes slideUp {
-        from { transform: translateY(50px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-`;
-
-// Add styles to head
-const styleSheet = document.createElement('style');
-styleSheet.textContent = modalStyles;
-document.head.appendChild(styleSheet);
-
-// Parallax effect for hero section
-window.addEventListener('scroll', () => {
-    const scrolled = window.pageYOffset;
-    const hero = document.querySelector('.hero');
-    if (hero) {
-        hero.style.transform = `translateY(${scrolled * 0.5}px)`;
-    }
-});
-
-// Counter animation for stats
-function animateCounter(element, target, duration = 2000) {
-    let start = 0;
-    const increment = target / (duration / 16);
-    
-    function updateCounter() {
-        start += increment;
-        if (start < target) {
-            element.textContent = Math.floor(start) + '+';
-            requestAnimationFrame(updateCounter);
-        } else {
-            element.textContent = target + '+';
-        }
-    }
-    
-    updateCounter();
-}
-
-// Trigger counter animation when stats section is visible
-const statsObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const statNumbers = entry.target.querySelectorAll('.stat-number');
-            statNumbers.forEach(stat => {
-                const target = parseInt(stat.textContent);
-                animateCounter(stat, target);
-            });
-            statsObserver.unobserve(entry.target);
-        }
-    });
-}, { threshold: 0.5 });
-
-const statsSection = document.querySelector('.stats');
-if (statsSection) {
-    statsObserver.observe(statsSection);
-}
-
-// Add hover effect to service cards
-document.querySelectorAll('.service-card').forEach(card => {
-    card.addEventListener('mouseenter', () => {
-        card.style.transform = 'translateY(-10px) scale(1.02)';
-    });
-    
-    card.addEventListener('mouseleave', () => {
-        card.style.transform = 'translateY(0) scale(1)';
-    });
-});
-
-// Typing effect for hero title
-function typeWriter(element, text, speed = 100) {
-    let i = 0;
-    element.innerHTML = '';
-    
-    function type() {
-        if (i < text.length) {
-            element.innerHTML += text.charAt(i);
-            i++;
-            setTimeout(type, speed);
-        }
-    }
-    
-    type();
-}
-
-// Initialize typing effect when page loads
-window.addEventListener('load', () => {
-    const heroTitle = document.querySelector('.hero-title');
-    if (heroTitle) {
-        const originalText = heroTitle.textContent;
-        typeWriter(heroTitle, originalText, 50);
-    }
-});
-
-// Add loading animation
-window.addEventListener('load', () => {
-    document.body.classList.add('loaded');
-});
-
-// Add CSS for loading animation
-const loadingStyles = `
-    body {
-        opacity: 0;
-        transition: opacity 0.5s ease;
-    }
-    
-    body.loaded {
-        opacity: 1;
-    }
-`;
-
-const loadingStyleSheet = document.createElement('style');
-loadingStyleSheet.textContent = loadingStyles;
-document.head.appendChild(loadingStyleSheet);
