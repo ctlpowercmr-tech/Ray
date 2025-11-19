@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Rayz.com</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>Administration</h2>
+            </div>
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="#dashboard" class="nav-link active" data-section="dashboard"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
+                    <li><a href="#hero" class="nav-link" data-section="hero"><i class="fas fa-image"></i> Bannière Hero</a></li>
+                    <li><a href="#services" class="nav-link" data-section="services"><i class="fas fa-concierge-bell"></i> Services</a></li>
+                    <li><a href="#projects" class="nav-link" data-section="projects"><i class="fas fa-project-diagram"></i> Projets</a></li>
+                    <li><a href="#about" class="nav-link" data-section="about"><i class="fas fa-info-circle"></i> À propos</a></li>
+                    <li><a href="#contact" class="nav-link" data-section="contact"><i class="fas fa-address-book"></i> Contact</a></li>
+                    <li><a href="#social" class="nav-link" data-section="social"><i class="fas fa-share-alt"></i> Réseaux sociaux</a></li>
+                    <li><a href="#promotions" class="nav-link" data-section="promotions"><i class="fas fa-tags"></i> Promotions</a></li>
+                    <li><a href="#settings" class="nav-link" data-section="settings"><i class="fas fa-cog"></i> Paramètres</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="admin-main">
+            <header class="admin-header">
+                <h1 id="admin-section-title">Tableau de bord</h1>
+                <div class="admin-actions">
+                    <button id="save-all" class="btn btn-primary"><i class="fas fa-save"></i> Sauvegarder tout</button>
+                    <button id="preview-site" class="btn btn-secondary"><i class="fas fa-eye"></i> Prévisualiser</button>
+                    <button id="logout" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Section Tableau de bord -->
+                <section id="dashboard" class="admin-section active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-project-diagram"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="projects-count">0</h3>
+                                <p>Projets</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-concierge-bell"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="services-count">0</h3>
+                                <p>Services</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="messages-count">0</h3>
+                                <p>Messages</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="promotions-count">0</h3>
+                                <p>Promotions actives</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <h3>Actions rapides</h3>
+                        <div class="actions-grid">
+                            <button class="action-btn" data-section="projects">
+                                <i class="fas fa-plus"></i>
+                                <span>Nouveau projet</span>
+                            </button>
+                            <button class="action-btn" data-section="services">
+                                <i class="fas fa-plus"></i>
+                                <span>Nouveau service</span>
+                            </button>
+                            <button class="action-btn" data-section="promotions">
+                                <i class="fas fa-tag"></i>
+                                <span>Nouvelle promotion</span>
+                            </button>
+                            <button class="action-btn" data-section="hero">
+                                <i class="fas fa-image"></i>
+                                <span>Modifier bannière</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section Hero/Bannière -->
+                <section id="hero" class="admin-section">
+                    <div class="section-header">
+                        <h2>Configuration de la bannière Hero</h2>
+                        <p>Personnalisez le carousel de la page d'accueil</p>
+                    </div>
+                    
+                    <div class="form-card">
+                        <h3>Slides du carousel</h3>
+                        <div id="hero-slides-container">
+                            <!-- Les slides seront chargées dynamiquement -->
+                        </div>
+                        <button id="add-hero-slide" class="btn btn-secondary"><i class="fas fa-plus"></i> Ajouter un slide</button>
+                    </div>
+                </section>
+
+                <!-- Section Services -->
+                <section id="services" class="admin-section">
+                    <div class="section-header">
+                        <h2>Gestion des services</h2>
+                        <p>Ajoutez, modifiez ou supprimez vos services</p>
+                    </div>
+                    
+                    <div class="form-card">
+                        <h3>Liste des services</h3>
+                        <div id="services-container">
+                            <!-- Les services seront chargés dynamiquement -->
+                        </div>
+                        <button id="add-service" class="btn btn-secondary"><i class="fas fa-plus"></i> Ajouter un service</button>
+                    </div>
+                </section>
+
+                <!-- Section Projets -->
+                <section id="projects" class="admin-section">
+                    <div class="section-header">
+                        <h2>Gestion des projets</h2>
+                        <p>Ajoutez, modifiez ou supprimez vos projets</p>
+                    </div>
+                    
+                    <div class="form-card">
+                        <h3>Liste des projets</h3>
+                        <div id="projects-container">
+                            <!-- Les projets seront chargés dynamiquement -->
+                        </div>
+                        <button id="add-project" class="btn btn-secondary"><i class="fas fa-plus"></i> Ajouter un projet</button>
+                    </div>
+                </section>
+
+                <!-- Section À propos -->
+                <section id="about" class="admin-section">
+                    <div class="section-header">
+                        <h2>Section À propos</h2>
+                        <p>Modifiez le contenu de la section À propos</p>
+                    </div>
+                    
+                    <div class="form-card">
+                        <div class="form-group">
+                            <label for="about-title">Titre</label>
+                            <input type="text" id="about-title" class="form-control" value="À Propos de Rayz.com">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="about-text-1">Premier paragraphe</label>
+                            <textarea id="about-text-1" class="form-control" rows="4"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="about-text-2">Deuxième paragraphe</label>
+                            <textarea id="about-text-2" class="form-control" rows="4"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="about-image">Image (URL)</label>
+                            <input type="text" id="about-image" class="form-control">
+                        </div>
+                        
+                        <h3>Statistiques</h3>
+                        <div id="stats-container">
+                            <!-- Les statistiques seront chargées dynamiquement -->
+                        </div>
+                        <button id="add-stat" class="btn btn-secondary"><i class="fas fa-plus"></i> Ajouter une statistique</button>
+                    </div>
+                </section>
+
+                <!-- Section Contact -->
+                <section id="contact" class="admin-section">
+                    <div class="section-header">
+                        <h2>Informations de contact</h2>
+                        <p>Modifiez les informations de contact affichées sur le site</p>
+                    </div>
+                    
+                    <div class="form-card">
+                        <div class="form-group">
+                            <label for="contact-address">Adresse</label>
+                            <input type="text" id="contact-address" class="form-control">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contact-phone">Téléphone</label>
+                            <input type="text" id="contact-phone" class="form-control">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contact-email">Email</label>
+                            <input type="email" id="contact-email" class="form-control">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section Réseaux sociaux -->
+                <section id="social" class="admin-section">
+                    <div class="section-header">
+                        <h2>Réseaux sociaux</h2>
+                        <p>Configurez les liens vers vos réseaux sociaux</p>
+                    </div>
+                    
+                    <div class="form-card">
+                        <div id="social-links-container">
+                            <!-- Les liens sociaux seront chargés dynamiquement -->
+                        </div>
+                        <button id="add-social-link" class="btn btn-secondary"><i class="fas fa-plus"></i> Ajouter un réseau social</button>
+                    </div>
+                </section>
+
+                <!-- Section Promotions -->
+                <section id="promotions" class="admin-section">
+                    <div class="section-header">
+                        <h2>Gestion des promotions</h2>
+                        <p>Créez et gérez vos promotions spéciales (Black Friday, Noël, etc.)</p>
+                    </div>
+                    
+                    <div class="form-card">
+                        <h3>Promotions actives</h3>
+                        <div id="promotions-container">
+                            <!-- Les promotions seront chargées dynamiquement -->
+                        </div>
+                        <button id="add-promotion" class="btn btn-secondary"><i class="fas fa-plus"></i> Nouvelle promotion</button>
+                    </div>
+
+                    <div class="form-card">
+                        <h3>Configuration des thèmes saisonniers</h3>
+                        <div class="form-group">
+                            <label for="seasonal-theme">Thème actif</label>
+                            <select id="seasonal-theme" class="form-control">
+                                <option value="none">Aucun</option>
+                                <option value="christmas">Noël</option>
+                                <option value="black-friday">Black Friday</option>
+                                <option value="summer">Été</option>
+                                <option value="new-year">Nouvel An</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="theme-start-date">Date de début</label>
+                            <input type="date" id="theme-start-date" class="form-control">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="theme-end-date">Date de fin</label>
+                            <input type="date" id="theme-end-date" class="form-control">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section Paramètres -->
+                <section id="settings" class="admin-section">
+                    <div class="section-header">
+                        <h2>Paramètres du site</h2>
+                        <p>Configurez les paramètres généraux du site</p>
+                    </div>
+                    
+                    <div class="form-card">
+                        <div class="form-group">
+                            <label for="site-name">Nom du site</label>
+                            <input type="text" id="site-name" class="form-control" value="Rayz.com">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="site-logo">Logo (URL)</label>
+                            <input type="text" id="site-logo" class="form-control">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="copyright-text">Texte de copyright</label>
+                            <input type="text" id="copyright-text" class="form-control" value="&copy; 2023 Rayz.com. Tous droits réservés.">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="admin-email">Email d'administration</label>
+                            <input type="email" id="admin-email" class="form-control" value="ctlpowerr@gmail.com">
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour les images -->
+    <div id="image-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Sélectionner une image</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="image-upload-container">
+                    <div class="upload-area" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Glissez et déposez une image ou <span>parcourir</span></p>
+                        <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="image-preview" id="image-preview"></div>
+                </div>
+                <div class="modal-actions">
+                    <button id="confirm-image" class="btn btn-primary">Utiliser cette image</button>
+                    <button id="cancel-image" class="btn btn-secondary">Annuler</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="admin-script.js"></script>
+</body>
+</html>
