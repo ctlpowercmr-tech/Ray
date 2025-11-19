@@ -1,0 +1,9 @@
+# Supabase Configuration
+SUPABASE_URL=https://ucfaogpvveapcfhwjrdy.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjZmFvZ3B2dmVhcGNmaHdqcmR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1MTgyNzUsImV4cCI6MjA3OTA5NDI3NX0.YC4SpFbbyNGoMW21yTAv2kWS5OvPQQU0LudilUsd92U
+
+# Admin Configuration
+ADMIN_PASSWORD=naturelle123A@23
+
+# Site Configuration
+SITE_URL=https://ray-two-puce.vercel.app
