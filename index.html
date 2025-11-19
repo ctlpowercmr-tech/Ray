@@ -3,62 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Distributeur Automatique - Boissons Fraîches</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <title>Rayz Security - Solutions de Sécurité Moderne</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>DISTRIBUTEUR DE BOISSONS</h1>
-            <div class="solde-distributeur">
-                Solde: <span id="solde-distributeur">0.00</span>€
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Rayz Security</span>
             </div>
-        </header>
-
-        <main>
-            <section class="selection-boissons">
-                <h2>CHOISISSEZ VOS BOISSONS (MAX 2)</h2>
-                <div class="boissons-grid" id="boissons-grid">
-                    <!-- Généré par JavaScript -->
-                </div>
-                <div class="selection-actuelle">
-                    <h3>VOTRE SÉLECTION:</h3>
-                    <div id="panier" class="panier">
-                        <div class="vide">Aucune boisson sélectionnée</div>
-                    </div>
-                    <div class="total">
-                        Total: <span id="total-panier">0.00</span>€
-                    </div>
-                </div>
-            </section>
-
-            <section class="paiement-section" id="paiement-section">
-                <h2>PAIEMENT</h2>
-                <div class="qr-code-container">
-                    <div id="qr-code"></div>
-                    <p>Scannez ce code QR avec votre téléphone pour payer</p>
-                    <div class="transaction-info">
-                        <p>Transaction ID: <span id="transaction-id">-</span></p>
-                        <p>Montant: <span id="montant-transaction">0.00</span>€</p>
-                        <p>Expire dans: <span id="expiration-timer">10:00</span></p>
-                    </div>
-                </div>
-                <div class="statut-paiement" id="statut-paiement">
-                    <div class="loader"></div>
-                    <span>En attente de paiement...</span>
-                </div>
-                <button id="annuler-paiement" class="btn-annuler">Annuler la transaction</button>
-            </section>
-
-            <div class="actions">
-                <button id="btn-payer" class="btn-payer" disabled>PAYER</button>
-                <button id="btn-modifier" class="btn-modifier" disabled>MODIFIER</button>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Accueil</a></li>
+                <li><a href="#services" class="nav-link">Services</a></li>
+                <li><a href="#projets" class="nav-link">Projets</a></li>
+                <li><a href="#blog" class="nav-link">Blog</a></li>
+                <li><a href="#apropos" class="nav-link">À Propos</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li><a href="https://rayz.com" class="nav-link boutique">Boutique</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
-        </main>
-    </div>
+        </div>
+    </nav>
 
-    <script src="config.js"></script>
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    <span class="gradient-text">Sécurité Connectée</span>
+                    <br>Pour un Monde Moderne
+                </h1>
+                <p class="hero-description">
+                    Installation professionnelle de systèmes de vidéosurveillance, Starlink, alarmes et solutions de sécurité innovantes. Votre sécurité, notre priorité.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn-primary" onclick="scrollToSection('services')">
+                        <span>Nos Services</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button class="btn-secondary" onclick="scrollToSection('projets')">
+                        <span>Voir Nos Projets</span>
+                    </button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="floating-card">
+                    <i class="fas fa-video"></i>
+                    <span>Caméra HD</span>
+                </div>
+                <div class="floating-card">
+                    <i class="fas fa-satellite"></i>
+                    <span>Starlink</span>
+                </div>
+                <div class="floating-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Sécurité 24/7</span>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Nos Services</h2>
+                <p class="section-subtitle">Des solutions technologiques modernes pour votre sécurité</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card" data-aos="fade-up">
+                    <div class="service-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h3>Vidéosurveillance</h3>
+                    <p>Installation de caméras HD et 4K avec vision nocturne, accès distant et stockage cloud</p>
+                    <ul class="service-features">
+                        <li><i class="fas fa-check"></i> Caméras IP haute définition</li>
+                        <li><i class="fas fa-check"></i> Vision nocturne infrarouge</li>
+                        <li><i class="fas fa-check"></i> Accès mobile 24/7</li>
+                    </ul>
+                </div>
+                <div class="service-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="service-icon">
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <h3>Starlink Installation</h3>
+                    <p>Installation professionnelle de Starlink pour une connexion internet ultra-rapide partout</p>
+                    <ul class="service-features">
+                        <li><i class="fas fa-check"></i> Configuration optimale</li>
+                        <li><i class="fas fa-check"></i> Test de vitesse</li>
+                        <li><i class="fas fa-check"></i> Support technique</li>
+                    </ul>
+                </div>
+                <div class="service-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="service-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3>Systèmes d'Alarme</h3>
+                    <p>Alarmes intelligentes avec détection de mouvement, notifications instantanées</p>
+                    <ul class="service-features">
+                        <li><i class="fas fa-check"></i> Détection intelligente</li>
+                        <li><i class="fas fa-check"></i> Notifications push</li>
+                        <li><i class="fas fa-check"></i> Intégration mobile</li>
+                    </ul>
+                </div>
+                <div class="service-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="service-icon">
+                        <i class="fas fa-wifi"></i>
+                    </div>
+                    <h3>Pointeurs de Présence</h3>
+                    <p>Systèmes de présence intelligents pour automatiser vos espaces</p>
+                    <ul class="service-features">
+                        <li><i class="fas fa-check"></i> Détection précise</li>
+                        <li><i class="fas fa-check"></i> Automatisation</li>
+                        <li><i class="fas fa-check"></i> Économie d'énergie</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projets Section -->
+    <section id="projets" class="projets">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Nos Projets</h2>
+                <p class="section-subtitle">Découvrez nos réalisations</p>
+            </div>
+            <div class="projets-grid">
+                <div class="projet-card">
+                    <div class="projet-image">
+                        <img src="https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600" alt="Système de vidéosurveillance">
+                        <div class="projet-overlay">
+                            <button class="view-btn" onclick="openProjet('projet1')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="projet-info">
+                        <h3>Centre Commercial Secure</h3>
+                        <p>Installation complète de 32 caméras HD avec centre de monitoring</p>
+                        <span class="projet-tag">Vidéosurveillance</span>
+                    </div>
+                </div>
+                <div class="projet-card">
+                    <div class="projet-image">
+                        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600" alt="Starlink Installation">
+                        <div class="projet-overlay">
+                            <button class="view-btn" onclick="openProjet('projet2')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="projet-info">
+                        <h3>Camping Connecté</h3>
+                        <p>Installation Starlink pour 50 emplacements en zone rurale</p>
+                        <span class="projet-tag">Starlink</span>
+                    </div>
+                </div>
+                <div class="projet-card">
+                    <div class="projet-image">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600" alt="Système d'alarme">
+                        <div class="projet-overlay">
+                            <button class="view-btn" onclick="openProjet('projet3')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="projet-info">
+                        <h3>Résidence Intelligente</h3>
+                        <p>Système d'alarme connecté avec domotique intégrée</p>
+                        <span class="projet-tag">Alarme</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section id="blog" class="blog">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Blog</h2>
+                <p class="section-subtitle">Actualités et conseils en sécurité</p>
+            </div>
+            <div class="blog-grid">
+                <article class="blog-card">
+                    <div class="blog-image">
+                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400" alt="Sécurité connectée">
+                    </div>
+                    <div class="blog-content">
+                        <span class="blog-date">15 Nov 2025</span>
+                        <h3>Les 5 tendances sécurité 2025</h3>
+                        <p>Découvrez les dernières innovations en matière de sécurité connectée...</p>
+                        <a href="#" class="read-more">Lire plus <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </article>
+                <article class="blog-card">
+                    <div class="blog-image">
+                        <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400" alt="Starlink">
+                    </div>
+                    <div class="blog-content">
+                        <span class="blog-date">10 Nov 2025</span>
+                        <h3>Starlink : Guide d'installation</h3>
+                        <p>Tout ce que vous devez savoir sur l'installation de Starlink...</p>
+                        <a href="#" class="read-more">Lire plus <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- À Propos Section -->
+    <section id="apropos" class="apropos">
+        <div class="container">
+            <div class="apropos-content">
+                <div class="apropos-text">
+                    <h2 class="section-title">À Propos de Rayz Security</h2>
+                    <p>Depuis 2020, Rayz Security est le leader de l'installation de systèmes de sécurité modernes. Notre équipe d'experts certifiés assure des installations professionnelles avec les dernières technologies.</p>
+                    <div class="stats">
+                        <div class="stat">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Projets réalisés</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">98%</span>
+                            <span class="stat-label">Clients satisfaits</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">24/7</span>
+                            <span class="stat-label">Support technique</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="apropos-visual">
+                    <div class="tech-showcase">
+                        <div class="tech-item">
+                            <i class="fas fa-award"></i>
+                            <span>Certifié Expert</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-tools"></i>
+                            <span>Installation Pro</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-headset"></i>
+                            <span>Support Premium</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Contactez-nous</h2>
+                <p class="section-subtitle">Prêt à sécuriser votre espace ?</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Adresse</h4>
+                            <p>123 Avenue de la Sécurité, 75000 Paris</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Téléphone</h4>
+                            <p>+33 1 23 45 67 89</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <p>contact@rayz-security.com</p>
+                        </div>
+                    </div>
+                </div>
+                <form class="contact-form">
+                    <div class="form-group">
+                        <input type="text" placeholder="Votre nom" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Votre email" required>
+                    </div>
+                    <div class="form-group">
+                        <select required>
+                            <option value="">Type de service</option>
+                            <option value="video">Vidéosurveillance</option>
+                            <option value="starlink">Starlink</option>
+                            <option value="alarme">Alarme</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Votre message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <span>Envoyer le message</span>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Rayz Security</span>
+                    </div>
+                    <p>Votre partenaire de confiance pour des solutions de sécurité modernes et innovantes.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="#">Vidéosurveillance</a></li>
+                        <li><a href="#">Starlink</a></li>
+                        <li><a href="#">Systèmes d'alarme</a></li>
+                        <li><a href="#">Pointeurs de présence</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Entreprise</h4>
+                    <ul>
+                        <li><a href="#apropos">À Propos</a></li>
+                        <li><a href="#projets">Projets</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="https://rayz.com">Boutique</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Support technique</a></li>
+                        <li><a href="#">Devis gratuit</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Rayz Security. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
     <script src="script.js"></script>
 </body>
 </html>
