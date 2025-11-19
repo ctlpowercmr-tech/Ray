@@ -1,707 +1,590 @@
-// ==========================================
-// RAYZ SECURITY - SITE ULTRA-MODERNE
-// Script Principal avec API Integration
-// ==========================================
+// Configuration Supabase
+const SUPABASE_URL = 'https://your-project.supabase.co';
+const SUPABASE_ANON_KEY = 'your-anon-key';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Configuration API
-const API_BASE_URL = window.location.origin;
-const API_ENDPOINTS = {
-    siteInfo: '/api/site-info',
-    services: '/api/services',
-    media: '/api/media',
-    maintenance: '/api/maintenance',
-    stats: '/api/stats',
-    activities: '/api/activities',
-    updateSiteInfo: '/api/update-site-info',
-    updateServices: '/api/update-services',
-    updateSocial: '/api/update-social',
-    updateMaintenance: '/api/update-maintenance',
-    uploadMedia: '/api/upload-media',
-    deleteMedia: '/api/delete-media'
-};
+// Éléments DOM
+let currentSlide = 0;
+let carouselInterval;
 
-// État global
-let siteData = {
-    info: {},
-    services: [],
-    media: [],
-    maintenance: {},
-    stats: {},
-    activities: []
-};
-
-// ==========================================
-// INITIALISATION
-// ==========================================
-
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 Initialisation Rayz Security...');
-    
-    // Initialiser Three.js
-    await initThreeJS();
-    
-    // Charger les données
-    await loadAllData();
-    
-    // Initialiser les animations
-    initAnimations();
-    
-    // Initialiser les interactions
-    initInteractions();
-    
-    // Démarrer les mises à jour en temps réel
-    startRealTimeUpdates();
-    
-    console.log('✅ Site initialisé avec succès!');
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    loadSiteData();
+    initEventListeners();
 });
 
-// ==========================================
-// THREE.JS - PARTICULES 3D
-// ==========================================
-
-let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
-
-async function initThreeJS() {
-    if (typeof THREE === 'undefined') {
-        console.log('⚠️ Three.js non chargé, passage en mode 2D');
-        return;
-    }
-    
+// Charger les données du site
+async function loadSiteData() {
     try {
-        // Scene
-        scene = new THREE.Scene();
-        
-        // Camera
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 5;
-        
-        // Renderer
-        renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0x000000, 0);
-        
-        const particlesContainer = document.getElementById('particles');
-        if (particlesContainer) {
-            particlesContainer.appendChild(renderer.domElement);
-            
-            // Créer les particules
-            const particlesGeometry = new THREE.BufferGeometry();
-            const particlesCount = 1500;
-            const posArray = new Float32Array(particlesCount * 3);
-            
-            for(let i = 0; i < particlesCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 15;
-            }
-            
-            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            
-            // Material
-            const particlesMaterial = new THREE.PointsMaterial({
-                size: 0.008,
-                color: 0x0066ff,
-                transparent: true,
-                opacity: 0.6,
-                blending: THREE.AdditiveBlending
-            });
-            
-            particles = new THREE.Points(particlesGeometry, particlesMaterial);
-            scene.add(particles);
-            
-            // Démarrer l'animation
-            animateThreeJS();
-            console.log('✅ Three.js initialisé');
+        // Charger les paramètres du site
+        const { data: settings, error: settingsError } = await supabase
+            .from('site_settings')
+            .select('*')
+            .single();
+
+        if (!settingsError && settings) {
+            applySiteSettings(settings);
         }
-    } catch (error) {
-        console.log('⚠️ Erreur Three.js:', error);
-    }
-}
 
-function animateThreeJS() {
-    requestAnimationFrame(animateThreeJS);
-    
-    if (particles) {
-        particles.rotation.x += 0.0005;
-        particles.rotation.y += 0.001;
-        particles.rotation.z += 0.0002;
-        
-        // Interaction souris
-        particles.rotation.x += mouseY * 0.00005;
-        particles.rotation.y += mouseX * 0.00005;
-    }
-    
-    if (renderer && scene && camera) {
-        renderer.render(scene, camera);
-    }
-}
+        // Charger les slides du carousel
+        const { data: slides, error: slidesError } = await supabase
+            .from('hero_slides')
+            .select('*')
+            .order('order_index');
 
-// Mouse tracking
-document.addEventListener('mousemove', (event) => {
-    mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-    mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
-});
-
-// Resize handler
-window.addEventListener('resize', () => {
-    if (camera && renderer) {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-});
-
-// ==========================================
-// GESTION DES DONNÉES API
-// ==========================================
-
-async function loadAllData() {
-    try {
-        console.log('📊 Chargement des données...');
-        
-        // Charger toutes les données en parallèle
-        const [siteInfo, services, media, maintenance, stats, activities] = await Promise.all([
-            fetchData(API_ENDPOINTS.siteInfo),
-            fetchData(API_ENDPOINTS.services),
-            fetchData(API_ENDPOINTS.media),
-            fetchData(API_ENDPOINTS.maintenance),
-            fetchData(API_ENDPOINTS.stats),
-            fetchData(API_ENDPOINTS.activities)
-        ]);
-        
-        // Stocker les données
-        siteData.info = siteInfo || {};
-        siteData.services = services || [];
-        siteData.media = media || [];
-        siteData.maintenance = maintenance || {};
-        siteData.stats = stats || {};
-        siteData.activities = activities || [];
-        
-        // Appliquer les données au DOM
-        applySiteData();
-        
-        console.log('✅ Données chargées');
-    } catch (error) {
-        console.error('❌ Erreur chargement données:', error);
-        // Charger les données locales par défaut
-        loadDefaultData();
-    }
-}
-
-async function fetchData(endpoint) {
-    try {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        return await response.json();
-    } catch (error) {
-        console.warn(`⚠️ Impossible de charger ${endpoint}:`, error);
-        return null;
-    }
-}
-
-function loadDefaultData() {
-    // Données par défaut si l'API n'est pas disponible
-    siteData.info = {
-        company_name: 'Rayz Security',
-        contact_email: 'contact@rayz.com',
-        contact_phone: '+33 1 23 45 67 89',
-        contact_address: 'Paris, France'
-    };
-    
-    siteData.services = [
-        {
-            name: 'Vidéosurveillance Ultra-HD',
-            description: 'Systèmes de caméras 4K/8K avec IA intégrée',
-            features: ['Reconnaissance faciale', 'Analyse comportementale', 'Stockage cloud sécurisé']
-        },
-        {
-            name: 'Starlink Enterprise',
-            description: 'Connexion satellite ultra-rapide',
-            features: ['Configuration optimale', 'Test de vitesse', 'Support technique']
+        if (!slidesError && slides) {
+            loadHeroCarousel(slides);
         }
+
+        // Charger les services
+        const { data: services, error: servicesError } = await supabase
+            .from('services')
+            .select('*')
+            .order('order_index');
+
+        if (!servicesError && services) {
+            loadServices(services);
+        }
+
+        // Charger les projets
+        const { data: projects, error: projectsError } = await supabase
+            .from('projects')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (!projectsError && projects) {
+            loadProjects(projects);
+        }
+
+        // Charger les promotions
+        const { data: promotions, error: promotionsError } = await supabase
+            .from('promotions')
+            .select('*')
+            .eq('is_active', true)
+            .gte('end_date', new Date().toISOString())
+            .lte('start_date', new Date().toISOString());
+
+        if (!promotionsError && promotions && promotions.length > 0) {
+            showPromotionBanner(promotions[0]);
+        }
+
+        // Charger les liens sociaux
+        const { data: socialLinks, error: socialError } = await supabase
+            .from('social_links')
+            .select('*')
+            .order('order_index');
+
+        if (!socialError && socialLinks) {
+            loadSocialLinks(socialLinks);
+        }
+
+        // Appliquer le thème saisonnier
+        applySeasonalTheme();
+
+    } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
+    }
+}
+
+// Appliquer les paramètres du site
+function applySiteSettings(settings) {
+    if (settings.site_name) {
+        document.getElementById('site-name').textContent = settings.site_name;
+        document.title = settings.site_name;
+    }
+
+    if (settings.site_logo) {
+        document.getElementById('site-logo').src = settings.site_logo;
+    }
+
+    if (settings.copyright_text) {
+        document.getElementById('copyright-text').innerHTML = settings.copyright_text;
+    }
+
+    // Appliquer les titres et textes
+    const textElements = [
+        'services-title', 'services-subtitle',
+        'projects-title', 'projects-subtitle',
+        'about-title', 'about-text-1', 'about-text-2',
+        'contact-title', 'contact-subtitle',
+        'contact-info-title', 'contact-info-text',
+        'contact-address', 'contact-phone', 'contact-email'
     ];
-    
-    siteData.maintenance = {
-        is_active: false,
-        message: 'Site en maintenance - Revenez bientôt'
-    };
-    
-    applySiteData();
-}
 
-function applySiteData() {
-    // Appliquer les informations du site
-    if (siteData.info.company_name) {
-        document.querySelectorAll('.logo-text, .footer-brand-3d span').forEach(el => {
-            el.textContent = siteData.info.company_name;
-        });
-    }
-    
-    // Appliquer le mode maintenance
-    if (siteData.maintenance.is_active) {
-        const maintenanceBanner = document.getElementById('maintenance-banner');
-        const maintenanceMessage = document.getElementById('maintenance-message');
-        
-        if (maintenanceBanner) {
-            maintenanceBanner.classList.add('active');
-            if (siteData.maintenance.message) {
-                maintenanceMessage.textContent = siteData.maintenance.message;
+    textElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element && settings[id]) {
+            if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                element.value = settings[id];
+            } else {
+                element.textContent = settings[id];
             }
         }
-    }
-    
-    // Appliquer les messages personnalisés
-    const customMessage = localStorage.getItem('customMessage');
-    if (customMessage) {
-        showCustomMessage(JSON.parse(customMessage));
-    }
-}
-
-// ==========================================
-// ANIMATIONS GSAP
-// ==========================================
-
-function initAnimations() {
-    if (typeof gsap === 'undefined') {
-        console.log('⚠️ GSAP non chargé');
-        return;
-    }
-    
-    // Enregistrer ScrollTrigger
-    gsap.registerPlugin(ScrollTrigger);
-    
-    // Animation hero title
-    gsap.from('.hero-title-3d .title-line', {
-        duration: 1.5,
-        y: 100,
-        opacity: 0,
-        stagger: 0.2,
-        ease: "power4.out",
-        delay: 0.5
-    });
-    
-    // Animation hero stats
-    gsap.from('.hero-stats .stat-item', {
-        duration: 1,
-        y: 50,
-        opacity: 0,
-        stagger: 0.1,
-        delay: 1,
-        ease: "power2.out"
-    });
-    
-    // Animation compteurs
-    animateCounters();
-    
-    // Animation bento grid
-    gsap.from('.bento-item', {
-        duration: 1,
-        scale: 0.8,
-        opacity: 0,
-        stagger: 0.1,
-        scrollTrigger: {
-            trigger: '.services-3d',
-            start: 'top 80%',
-            toggleActions: 'play none none reverse'
-        }
-    });
-    
-    // Animation showcase
-    gsap.from('.showcase-item', {
-        duration: 1.5,
-        rotationY: 90,
-        opacity: 0,
-        scrollTrigger: {
-            trigger: '.projets-3d',
-            start: 'top 80%',
-            toggleActions: 'play none none reverse'
-        }
     });
 }
 
-function animateCounters() {
-    const counters = document.querySelectorAll('.stat-number');
-    counters.forEach(counter => {
-        const target = parseInt(counter.getAttribute('data-target'));
-        if (target) {
-            gsap.to(counter, {
-                duration: 2,
-                innerHTML: target,
-                snap: { innerHTML: 1 },
-                ease: "power2.inOut",
-                delay: 1.5,
-                onUpdate: function() {
-                    counter.innerHTML = Math.floor(counter.innerHTML);
+// Charger le carousel Hero
+function loadHeroCarousel(slides) {
+    const carousel = document.getElementById('hero-carousel');
+    const indicators = document.querySelector('.carousel-indicators');
+    
+    carousel.innerHTML = '';
+    if (indicators) indicators.innerHTML = '';
+
+    slides.forEach((slide, index) => {
+        // Créer le slide
+        const slideElement = document.createElement('div');
+        slideElement.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
+        slideElement.style.background = slide.background || `linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%)`;
+        
+        slideElement.innerHTML = `
+            <div class="container">
+                <div class="hero-content">
+                    <h1>${slide.title}</h1>
+                    <p>${slide.description}</p>
+                    <div class="hero-btns">
+                        <a href="${slide.primary_button_link || '#projects'}" class="btn btn-primary">${slide.primary_button_text || 'Voir nos projets'}</a>
+                        <a href="https://shop.thetic.de" target="_blank" class="btn btn-shop"><i class="fas fa-shopping-cart"></i> Visiter notre boutique</a>
+                    </div>
+                </div>
+                ${slide.image ? `
+                <div class="hero-image">
+                    <img src="${slide.image}" alt="${slide.title}">
+                </div>
+                ` : ''}
+            </div>
+        `;
+        
+        carousel.appendChild(slideElement);
+
+        // Créer l'indicateur
+        if (indicators) {
+            const indicator = document.createElement('div');
+            indicator.className = `carousel-indicator ${index === 0 ? 'active' : ''}`;
+            indicator.setAttribute('data-slide', index);
+            indicators.appendChild(indicator);
+        }
+    });
+
+    // Redémarrer le carousel
+    initCarousel();
+}
+
+// Initialiser le carousel
+function initCarousel() {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const indicators = document.querySelectorAll('.carousel-indicator');
+    
+    if (carouselInterval) clearInterval(carouselInterval);
+    
+    carouselInterval = setInterval(() => {
+        let nextSlide = (currentSlide + 1) % slides.length;
+        showSlide(nextSlide);
+    }, 5000);
+
+    // Ajouter les événements aux indicateurs
+    indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => {
+            showSlide(index);
+        });
+    });
+}
+
+// Afficher un slide spécifique
+function showSlide(index) {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const indicators = document.querySelectorAll('.carousel-indicator');
+    
+    slides.forEach(slide => slide.classList.remove('active'));
+    indicators.forEach(indicator => indicator.classList.remove('active'));
+    
+    slides[index].classList.add('active');
+    indicators[index].classList.add('active');
+    currentSlide = index;
+}
+
+// Charger les services
+function loadServices(services) {
+    const servicesGrid = document.getElementById('services-grid');
+    const serviceSelect = document.getElementById('service');
+    
+    servicesGrid.innerHTML = '';
+    serviceSelect.innerHTML = '<option value="">Sélectionnez un service</option>';
+
+    services.forEach(service => {
+        // Ajouter au grid
+        const serviceCard = document.createElement('div');
+        serviceCard.className = 'service-card';
+        serviceCard.style.animationDelay = `${services.indexOf(service) * 0.1}s`;
+        
+        serviceCard.innerHTML = `
+            <div class="service-icon">
+                <i class="${service.icon || 'fas fa-cog'}"></i>
+            </div>
+            <h3>${service.title}</h3>
+            <p>${service.description}</p>
+            ${service.promotion_text ? `<div class="promotion-badge">${service.promotion_text}</div>` : ''}
+        `;
+        
+        servicesGrid.appendChild(serviceCard);
+
+        // Ajouter au select
+        const option = document.createElement('option');
+        option.value = service.id;
+        option.textContent = service.title;
+        serviceSelect.appendChild(option);
+    });
+
+    // Animer les services
+    animateOnScroll();
+}
+
+// Charger les projets
+function loadProjects(projects) {
+    const projectsGrid = document.getElementById('projects-grid');
+    const projectsFilter = document.getElementById('projects-filter');
+    
+    projectsGrid.innerHTML = '';
+    
+    // Créer les filtres
+    const categories = [...new Set(projects.map(p => p.category))];
+    projectsFilter.innerHTML = `
+        <button class="filter-btn active" data-filter="all">Tous</button>
+        ${categories.map(cat => 
+            `<button class="filter-btn" data-filter="${cat}">${cat}</button>`
+        ).join('')}
+    `;
+
+    // Ajouter les projets
+    projects.forEach(project => {
+        const projectCard = document.createElement('div');
+        projectCard.className = 'project-card';
+        projectCard.setAttribute('data-category', project.category);
+        projectCard.setAttribute('data-project', project.id);
+        projectCard.style.animationDelay = `${projects.indexOf(project) * 0.1}s`;
+        
+        projectCard.innerHTML = `
+            <div class="project-image">
+                <img src="${project.images ? project.images[0] : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUwIiBoZWlnaHQ9IjIyMCIgdmlld0JveD0iMCAwIDM1MCAyMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzNTAiIGhlaWdodD0iMjIwIiByeD0iMTAiIGZpbGw9IiNGNEY2RjgiLz4KPHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMzMwIiBoZWlnaHQ9IjIwMCIgcng9IjUiIGZpbGw9IiNFOUU3RUYiLz4KPGNpcmNsZSBjeD0iMTc1IiBjeT0iMTEwIiByPSI0MCIgZmlsbD0iIzAwOTZENiIvPgo8Y2lyY2xlIGN4PSIxNzUiIGN5PSIxMTAiIHI9IjE1IiBmaWxsPSIjRjhGQUZDIi8+CjxjaXJjbGUgY3g9IjE3NSIgY3k9IjExMCIgcj0iOCIgZmlsbD0iIzAwOTZENiIvPgo8cmVjdCB4PSIxMCIgeT0iMTUwIiB3aWR0aD0iMzMwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjMwIiB5PSIxNjAiIHdpZHRoPSIyOTAiIGhlaWdodD0iNDAiIHJ4PSI1IiBmaWxsPSIjRTlFN0VGIi8+Cjwvc3ZnPgo='}" alt="${project.title}">
+                <div class="project-overlay">
+                    <a href="#" class="btn btn-primary">Voir le projet</a>
+                </div>
+            </div>
+            <div class="project-info">
+                <h3>${project.title}</h3>
+                <p>${project.short_description}</p>
+            </div>
+        `;
+        
+        projectsGrid.appendChild(projectCard);
+    });
+
+    // Ajouter les événements de filtrage
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            
+            document.querySelectorAll('.project-card').forEach(card => {
+                if (filter === 'all' || card.getAttribute('data-category') === filter) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
                 }
             });
+        });
+    });
+
+    // Ajouter les événements de modal
+    document.querySelectorAll('.project-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const projectId = this.getAttribute('data-project');
+            openProjectModal(projectId, projects);
+        });
+    });
+
+    // Animer les projets
+    animateOnScroll();
+}
+
+// Ouvrir la modal du projet
+function openProjectModal(projectId, projects) {
+    const project = projects.find(p => p.id == projectId);
+    if (!project) return;
+
+    const modal = document.getElementById('projectModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalImage = document.getElementById('modal-image');
+    const modalCaption = document.getElementById('modal-caption');
+    const projectDetailTitle = document.getElementById('projectDetailTitle');
+    const projectDetailDescription = document.getElementById('projectDetailDescription');
+
+    modalTitle.textContent = project.title;
+    projectDetailTitle.textContent = project.title;
+    projectDetailDescription.textContent = project.description;
+
+    if (project.images && project.images.length > 0) {
+        modalImage.src = project.images[0];
+        modalCaption.textContent = project.image_captions ? project.image_captions[0] : 'Image du projet';
+    }
+
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Afficher la bannière de promotion
+function showPromotionBanner(promotion) {
+    const banner = document.getElementById('promotion-banner');
+    const promotionText = document.getElementById('promotion-text');
+    
+    if (banner && promotionText) {
+        promotionText.textContent = promotion.title;
+        banner.style.display = 'block';
+        
+        // Appliquer le style de la promotion
+        if (promotion.style) {
+            try {
+                const style = JSON.parse(promotion.style);
+                Object.keys(style).forEach(key => {
+                    banner.style[key] = style[key];
+                });
+            } catch (e) {
+                console.error('Erreur dans le style de promotion:', e);
+            }
+        }
+    }
+}
+
+// Charger les liens sociaux
+function loadSocialLinks(socialLinks) {
+    const socialContainer = document.getElementById('social-links');
+    const footerContainer = document.getElementById('footer-content');
+    
+    if (socialContainer) {
+        socialContainer.innerHTML = socialLinks.map(link => `
+            <a href="${link.url}" target="_blank" class="social-link">
+                <i class="${link.icon}"></i>
+            </a>
+        `).join('');
+    }
+    
+    if (footerContainer) {
+        footerContainer.innerHTML = `
+            <div class="footer-col">
+                <h4 id="footer-site-name">Rayz.com</h4>
+                <p id="footer-description">Votre partenaire de confiance pour des solutions de sécurité innovantes et performantes.</p>
+                <div class="social-links">
+                    ${socialLinks.map(link => `
+                        <a href="${link.url}" target="_blank" class="social-link">
+                            <i class="${link.icon}"></i>
+                        </a>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Liens rapides</h4>
+                <ul class="footer-links">
+                    <li><a href="#home">Accueil</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#projects">Projets</a></li>
+                    <li><a href="#about">À propos</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Services</h4>
+                <ul class="footer-links" id="footer-services">
+                    <!-- Les services seront chargés dynamiquement -->
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <ul class="footer-links">
+                    <li><i class="fas fa-map-marker-alt"></i> <span id="footer-address">123 Avenue de la Sécurité, Paris</span></li>
+                    <li><i class="fas fa-phone"></i> <span id="footer-phone">+33 1 23 45 67 89</span></li>
+                    <li><i class="fas fa-envelope"></i> <span id="footer-email">contact@rayz.com</span></li>
+                </ul>
+            </div>
+        `;
+    }
+}
+
+// Appliquer le thème saisonnier
+function applySeasonalTheme() {
+    const theme = localStorage.getItem('seasonal_theme');
+    const startDate = localStorage.getItem('theme_start_date');
+    const endDate = localStorage.getItem('theme_end_date');
+    
+    if (theme && theme !== 'none') {
+        const now = new Date();
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        if (now >= start && now <= end) {
+            document.body.classList.add(`${theme}-theme`);
+        } else {
+            localStorage.removeItem('seasonal_theme');
+            localStorage.removeItem('theme_start_date');
+            localStorage.removeItem('theme_end_date');
+        }
+    }
+}
+
+// Initialiser les événements
+function initEventListeners() {
+    // Header scroll effect
+    window.addEventListener('scroll', function() {
+        const header = document.getElementById('header');
+        if (window.scrollY > 50) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
         }
     });
-}
 
-// ==========================================
-// INTERACTIONS UTILISATEUR
-// ==========================================
+    // Mobile menu toggle
+    const mobileToggle = document.getElementById('mobile-toggle');
+    const nav = document.getElementById('nav');
+    
+    if (mobileToggle && nav) {
+        mobileToggle.addEventListener('click', function() {
+            nav.classList.toggle('active');
+        });
+    }
 
-function initInteractions() {
-    // Navigation 3D
-    initNavigation3D();
+    // Fermer la bannière de promotion
+    const closePromotion = document.getElementById('close-promotion');
+    if (closePromotion) {
+        closePromotion.addEventListener('click', function() {
+            document.getElementById('promotion-banner').style.display = 'none';
+        });
+    }
+
+    // Fermer la modal
+    const modalClose = document.getElementById('modalClose');
+    const modal = document.getElementById('projectModal');
     
-    // Showcase navigation
-    initShowcaseNavigation();
-    
+    if (modalClose && modal) {
+        modalClose.addEventListener('click', function() {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+        
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+    }
+
     // Formulaire de contact
-    initContactForm();
-    
-    // Boutons d'action
-    initActionButtons();
-}
-
-function initNavigation3D() {
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('mouseenter', () => {
-            if (typeof gsap !== 'undefined') {
-                gsap.to(item.querySelector('.nav-cube'), {
-                    duration: 0.3,
-                    scale: 1.1,
-                    ease: "power2.out"
-                });
-            }
-        });
-        
-        item.addEventListener('mouseleave', () => {
-            if (typeof gsap !== 'undefined') {
-                gsap.to(item.querySelector('.nav-cube'), {
-                    duration: 0.3,
-                    scale: 1,
-                    ease: "power2.out"
-                });
-            }
-        });
-        
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            const section = item.getAttribute('data-section');
-            if (section) {
-                scrollToSection(section);
-            }
-        });
-    });
-}
-
-function initShowcaseNavigation() {
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const slide = btn.getAttribute('data-slide');
-            
-            // Update active button
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            // Animate showcase transition
-            if (typeof gsap !== 'undefined') {
-                gsap.to('.showcase-item', {
-                    duration: 0.5,
-                    rotationY: -90,
-                    opacity: 0,
-                    onComplete: () => {
-                        // Here you would load the actual slide content
-                        gsap.to('.showcase-item', {
-                            duration: 0.5,
-                            rotationY: 0,
-                            opacity: 1
-                        });
-                    }
-                });
-            }
-        });
-    });
-}
-
-function initContactForm() {
     const contactForm = document.getElementById('contactForm');
     if (contactForm) {
-        contactForm.addEventListener('submit', async (e) => {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitContactForm();
+        });
+    }
+
+    // Smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
             e.preventDefault();
             
-            const button = e.target.querySelector('.btn-submit-3d');
-            const originalHTML = button.innerHTML;
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
             
-            // Animation de chargement
-            button.innerHTML = '<div class="btn-loader"></div>';
-            button.disabled = true;
-            
-            try {
-                // Simuler l'envoi du formulaire
-                await new Promise(resolve => setTimeout(resolve, 2000));
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
                 
-                // Succès
-                button.innerHTML = '<i class="fas fa-check"></i> Message envoyé!';
-                button.style.background = 'var(--success-color)';
-                
-                setTimeout(() => {
-                    button.innerHTML = originalHTML;
-                    button.disabled = false;
-                    button.style.background = '';
-                    e.target.reset();
-                }, 3000);
-                
-            } catch (error) {
-                // Erreur
-                button.innerHTML = '<i class="fas fa-times"></i> Erreur';
-                button.style.background = 'var(--error-color)';
-                
-                setTimeout(() => {
-                    button.innerHTML = originalHTML;
-                    button.disabled = false;
-                    button.style.background = '';
-                }, 3000);
+                // Fermer le menu mobile si ouvert
+                if (nav && nav.classList.contains('active')) {
+                    nav.classList.remove('active');
+                }
             }
         });
-    }
+    });
 }
 
-function initActionButtons() {
-    // Boutons hero
-    document.querySelectorAll('.btn-primary-3d, .btn-secondary-3d').forEach(btn => {
-        btn.addEventListener('mouseenter', () => {
-            if (typeof gsap !== 'undefined') {
-                gsap.to(btn, {
-                    duration: 0.3,
-                    scale: 1.05,
-                    ease: "power2.out"
-                });
-            }
-        });
+// Soumettre le formulaire de contact
+async function submitContactForm() {
+    const form = document.getElementById('contactForm');
+    const formData = new FormData(form);
+    
+    const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        service: formData.get('service'),
+        message: formData.get('message'),
+        created_at: new Date().toISOString()
+    };
+
+    try {
+        const { error } = await supabase
+            .from('contact_messages')
+            .insert([data]);
+
+        if (error) throw error;
+
+        alert('Merci pour votre message! Nous vous contacterons bientôt.');
+        form.reset();
         
-        btn.addEventListener('mouseleave', () => {
-            if (typeof gsap !== 'undefined') {
-                gsap.to(btn, {
-                    duration: 0.3,
-                    scale: 1,
-                    ease: "power2.out"
-                });
+        // Envoyer un email via EmailJS
+        sendEmailNotification(data);
+        
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi du message:', error);
+        alert('Une erreur est survenue. Veuillez réessayer.');
+    }
+}
+
+// Envoyer une notification par email
+function sendEmailNotification(data) {
+    // Configuration EmailJS
+    emailjs.init('4gEzT9DkXPjvp2WxD');
+    
+    const templateParams = {
+        from_name: data.name,
+        from_email: data.email,
+        phone: data.phone,
+        service: data.service,
+        message: data.message,
+        to_email: 'ctlpowerr@gmail.com'
+    };
+
+    emailjs.send('service_4ab2q68', 'template_default', templateParams)
+        .then(response => {
+            console.log('Email envoyé avec succès:', response);
+        })
+        .catch(error => {
+            console.error('Erreur lors de l\'envoi de l\'email:', error);
+        });
+}
+
+// Animation au défilement
+function animateOnScroll() {
+    const elements = document.querySelectorAll('.service-card, .project-card, .stat');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
             }
         });
-    });
-}
-
-// ==========================================
-// FONCTIONS UTILITAIRES
-// ==========================================
-
-function scrollToSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    if (section) {
-        if (typeof gsap !== 'undefined') {
-            gsap.to(window, {
-                duration: 1.5,
-                scrollTo: {
-                    y: section,
-                    offsetY: 100
-                },
-                ease: "power2.inOut"
-            });
-        } else {
-            section.scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-}
-
-function showCustomMessage(messageData) {
-    // Créer et afficher un message personnalisé
-    const messageContainer = document.createElement('div');
-    messageContainer.className = `custom-message ${messageData.type}`;
-    messageContainer.innerHTML = `
-        <div class="message-content">
-            <h4>${messageData.title}</h4>
-            <p>${messageData.content}</p>
-            <button class="close-message">&times;</button>
-        </div>
-    `;
-    
-    document.body.appendChild(messageContainer);
-    
-    // Animer l'apparition
-    if (typeof gsap !== 'undefined') {
-        gsap.from(messageContainer, {
-            duration: 0.5,
-            y: -100,
-            opacity: 0,
-            ease: "power2.out"
-        });
-    }
-    
-    // Fermer le message
-    messageContainer.querySelector('.close-message').addEventListener('click', () => {
-        if (typeof gsap !== 'undefined') {
-            gsap.to(messageContainer, {
-                duration: 0.3,
-                y: -100,
-                opacity: 0,
-                onComplete: () => messageContainer.remove()
-            });
-        } else {
-            messageContainer.remove();
-        }
+    }, {
+        threshold: 0.1
     });
     
-    // Auto-fermer après 5 secondes
-    setTimeout(() => {
-        if (messageContainer.parentNode) {
-            messageContainer.querySelector('.close-message').click();
-        }
-    }, 5000);
+    elements.forEach(element => {
+        observer.observe(element);
+    });
 }
-
-// ==========================================
-// MISES À JOUR EN TEMPS RÉEL
-// ==========================================
-
-function startRealTimeUpdates() {
-    // Mettre à jour les stats toutes les 30 secondes
-    setInterval(async () => {
-        try {
-            const stats = await fetchData(API_ENDPOINTS.stats);
-            if (stats) {
-                siteData.stats = stats;
-                updateStatsDisplay();
-            }
-        } catch (error) {
-            console.error('Erreur mise à jour stats:', error);
-        }
-    }, 30000);
-    
-    // Vérifier les nouvelles activités toutes les 10 secondes
-    setInterval(async () => {
-        try {
-            const activities = await fetchData(API_ENDPOINTS.activities);
-            if (activities && activities.length > siteData.activities.length) {
-                siteData.activities = activities;
-                updateActivitiesDisplay();
-            }
-        } catch (error) {
-            console.error('Erreur mise à jour activités:', error);
-        }
-    }, 10000);
-}
-
-function updateStatsDisplay() {
-    if (siteData.stats.visits !== undefined) {
-        document.getElementById('visitsCount') && animateCounter('visitsCount', siteData.stats.visits);
-    }
-    if (siteData.stats.users !== undefined) {
-        document.getElementById('usersCount') && animateCounter('usersCount', siteData.stats.users);
-    }
-    if (siteData.stats.avgTime !== undefined) {
-        const avgTimeElement = document.getElementById('avgTime');
-        if (avgTimeElement) {
-            avgTimeElement.textContent = `${siteData.stats.avgTime}s`;
-        }
-    }
-}
-
-function updateActivitiesDisplay() {
-    // Mettre à jour l'affichage des activités si la section est visible
-    const activityList = document.getElementById('activityList');
-    if (activityList && siteData.activities.length > 0) {
-        // Implementation pour mettre à jour l'affichage
-        console.log('Nouvelles activités:', siteData.activities);
-    }
-}
-
-// ==========================================
-// STYLES DYNAMIQUES
-// ==========================================
-
-// Ajouter les styles CSS dynamiques
-const dynamicStyles = `
-    .custom-message {
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: var(--dark-card);
-        border: 1px solid var(--admin-border);
-        border-radius: 10px;
-        padding: 1.5rem;
-        max-width: 400px;
-        z-index: 9999;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-    
-    .custom-message.info { border-left: 4px solid var(--admin-primary); }
-    .custom-message.success { border-left: 4px solid var(--admin-success); }
-    .custom-message.warning { border-left: 4px solid var(--admin-warning); }
-    .custom-message.error { border-left: 4px solid var(--admin-error); }
-    
-    .message-content h4 {
-        margin: 0 0 0.5rem 0;
-        color: var(--text-primary);
-    }
-    
-    .message-content p {
-        margin: 0;
-        color: var(--text-secondary);
-    }
-    
-    .close-message {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        font-size: 1.5rem;
-        cursor: pointer;
-        padding: 0;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .btn-loader {
-        width: 20px;
-        height: 20px;
-        border: 2px solid #ffffff;
-        border-top: 2px solid transparent;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-`;
-
-// Injection des styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = dynamicStyles;
-document.head.appendChild(styleSheet);
-
-// ==========================================
-// GESTION DES ERREURS
-// ==========================================
-
-window.addEventListener('error', (event) => {
-    console.error('❌ Erreur globale:', event.error);
-    // Vous pouvez ajouter ici un système de rapport d'erreurs
-});
-
-window.addEventListener('unhandledrejection', (event) => {
-    console.error('❌ Promesse non gérée:', event.reason);
-    // Vous pouvez ajouter ici un système de rapport d'erreurs
-});
-
-// ==========================================
-// EXPORT POUR ADMIN
-// ==========================================
-
-// Fonctions disponibles pour l'admin
-window.SiteAPI = {
-    refreshData: loadAllData,
-    showMessage: showCustomMessage,
-    updateStats: updateStatsDisplay,
-    getSiteData: () => siteData
-};
-
-console.log('🎯 Site Rayz Security prêt! API disponible: window.SiteAPI');
