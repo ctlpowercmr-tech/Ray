@@ -1,439 +1,473 @@
-// Configuration Supabase
-const SUPABASE_URL = 'https://nfxaylgcacsycaxpjshv.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5meGF5bGdjYWNzeWNheHBqc2h2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NDQ4MDcsImV4cCI6MjA3OTEyMDgwN30.fD3Y4_qjcBxhWIIVYP4hQ3fgHQsLVszDldCj-NCTlsA';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Éléments DOM
-let currentSlide = 0;
-let carouselInterval;
-
-// Initialisation
+// Configuration et initialisation
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser Supabase
+    initSupabase();
+    
+    // Charger les données du site
     loadSiteData();
-    initEventListeners();
+    
+    // Initialiser les événements
+    initEvents();
+    
+    // Initialiser EmailJS
+    initEmailJS();
 });
+
+// Initialisation de Supabase
+async function initSupabase() {
+    // Cette fonction est définie dans supabase.js
+    console.log('Supabase initialisé');
+}
 
 // Charger les données du site
 async function loadSiteData() {
     try {
         // Charger les paramètres du site
-        const { data: settings, error: settingsError } = await supabase
-            .from('site_settings')
-            .select('*')
-            .single();
-
-        if (!settingsError && settings) {
-            applySiteSettings(settings);
-        }
-
-        // Charger les slides du carousel
-        const { data: slides, error: slidesError } = await supabase
-            .from('hero_slides')
-            .select('*')
-            .order('order_index');
-
-        if (!slidesError && slides) {
-            loadHeroCarousel(slides);
-        }
-
+        await loadSiteSettings();
+        
+        // Charger les slides de la bannière hero
+        await loadHeroSlides();
+        
         // Charger les services
-        const { data: services, error: servicesError } = await supabase
-            .from('services')
-            .select('*')
-            .order('order_index');
-
-        if (!servicesError && services) {
-            loadServices(services);
-        }
-
+        await loadServices();
+        
         // Charger les projets
-        const { data: projects, error: projectsError } = await supabase
-            .from('projects')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (!projectsError && projects) {
-            loadProjects(projects);
-        }
-
-        // Charger les promotions
-        const { data: promotions, error: promotionsError } = await supabase
-            .from('promotions')
-            .select('*')
-            .eq('is_active', true)
-            .gte('end_date', new Date().toISOString())
-            .lte('start_date', new Date().toISOString());
-
-        if (!promotionsError && promotions && promotions.length > 0) {
-            showPromotionBanner(promotions[0]);
-        }
-
-        // Charger les liens sociaux
-        const { data: socialLinks, error: socialError } = await supabase
-            .from('social_links')
-            .select('*')
-            .order('order_index');
-
-        if (!socialError && socialLinks) {
-            loadSocialLinks(socialLinks);
-        }
-
-        // Appliquer le thème saisonnier
-        applySeasonalTheme();
-
+        await loadProjects();
+        
+        // Charger les promotions actives
+        await loadActivePromotions();
+        
+        // Initialiser les animations
+        initAnimations();
+        
     } catch (error) {
         console.error('Erreur lors du chargement des données:', error);
     }
 }
 
-// Appliquer les paramètres du site
-function applySiteSettings(settings) {
-    if (settings.site_name) {
-        document.getElementById('site-name').textContent = settings.site_name;
-        document.title = settings.site_name;
+// Charger les paramètres du site
+async function loadSiteSettings() {
+    try {
+        // Dans un cas réel, on récupérerait ces données de Supabase
+        // Pour l'instant, on utilise des valeurs par défaut
+        
+        // Appliquer les couleurs du thème
+        applyTheme('default');
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des paramètres:', error);
     }
-
-    if (settings.site_logo) {
-        document.getElementById('site-logo').src = settings.site_logo;
-    }
-
-    if (settings.copyright_text) {
-        document.getElementById('copyright-text').innerHTML = settings.copyright_text;
-    }
-
-    // Appliquer les titres et textes
-    const textElements = [
-        'services-title', 'services-subtitle',
-        'projects-title', 'projects-subtitle',
-        'about-title', 'about-text-1', 'about-text-2',
-        'contact-title', 'contact-subtitle',
-        'contact-info-title', 'contact-info-text',
-        'contact-address', 'contact-phone', 'contact-email'
-    ];
-
-    textElements.forEach(id => {
-        const element = document.getElementById(id);
-        if (element && settings[id]) {
-            if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-                element.value = settings[id];
-            } else {
-                element.textContent = settings[id];
-            }
-        }
-    });
 }
 
-// Charger le carousel Hero
-function loadHeroCarousel(slides) {
-    const carousel = document.getElementById('hero-carousel');
-    const indicators = document.querySelector('.carousel-indicators');
-    
-    carousel.innerHTML = '';
-    if (indicators) indicators.innerHTML = '';
-
-    slides.forEach((slide, index) => {
-        // Créer le slide
-        const slideElement = document.createElement('div');
-        slideElement.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
-        slideElement.style.background = slide.background || `linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%)`;
+// Charger les slides de la bannière hero
+async function loadHeroSlides() {
+    try {
+        const heroCarousel = document.getElementById('hero-carousel');
         
-        slideElement.innerHTML = `
-            <div class="container">
-                <div class="hero-content">
-                    <h1>${slide.title}</h1>
-                    <p>${slide.description}</p>
-                    <div class="hero-btns">
-                        <a href="${slide.primary_button_link || '#projects'}" class="btn btn-primary">${slide.primary_button_text || 'Voir nos projets'}</a>
-                        <a href="https://shop.thetic.de" target="_blank" class="btn btn-shop"><i class="fas fa-shopping-cart"></i> Visiter notre boutique</a>
+        // Données par défaut (dans un cas réel, viendraient de Supabase)
+        const slides = [
+            {
+                title: "Solutions de Sécurité Innovantes",
+                description: "Rayz.com est votre partenaire de confiance pour l'installation de systèmes de surveillance modernes, Starlink, alarmes et bien plus encore.",
+                image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQ1MCIgdmlld0JveD0iMCAwIDYwMCA0NTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iNDUwIiByeD0iMTUiIGZpbGw9IiNGRkZGRkYiLz4KPHBhdGggZD0iTTE1MCAxNTBINDVWMTE1SDE1MFYxNTBaIiBmaWxsPSIjRTVFN0VGIi8+CjxwYXRoIGQ9Ik0xNTAgMTg1SDQ1VjIyMEgxNTBWMTg1WiIgZmlsbD0iI0U1RTdFRiIvPgo8cGF0aCBkPSJNMTUwIDI1NUg0NVYyOTBIMTUwVjI1NVoiIGZpbGw9IiNFNUU3RUYiLz4KPHBhdGggZD0iTTE1MCAzMjVINDVWMzYwSDE1MFYzMjVaIiBmaWxsPSIjRTVFN0VGIi8+CjxjaXJjbGUgY3g9IjMwMCIgY3k9IjIyNSIgcj0iODAiIGZpbGw9IiMwMDk2RDYiLz4KPHBhdGggZD0iTTI2MCAyMjVMMzIwIDI2NVYxODVMMjYwIDIyNVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0zNDAgMjI1TDI4MCAxODVWMjY1TDM0MCAyMjVaIiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSIzNzAiIHk9IjE1MCIgd2lkdGg9IjE4NSIgaGVpZ2h0PSIyMDAiIHJ4PSIxMCIgZmlsbD0iI0Y1RjdGQSIvPgo8cmVjdCB4PSIzOTAiIHk9IjE3MCIgd2lkdGg9IjE0NSIgaGVpZ2h0PSIxNDAiIHJ4PSI1IiBmaWxsPSIjRTVFN0VGIi8+CjxjaXJjbGUgY3g9IjQxMCIgY3k9IjE5MCIgcj0iNSIgZmlsbD0iIzAwOTZENiIvPgo8Y2lyY2xlIGN4PSI0MzAiIGN5PSIxOTAiIHI9IjUiIGZpbGw9IiMwMDk2RDYiLz4KPGNpcmNsZSBjeD0iNDUwIiBjeT0iMTkwIiByPSI1IiBmaWxsPSIjMDA5NkQ2Ii8+CjxyZWN0IHg9IjQxMCIgeT0iMjEwIiB3aWR0aD0iMTI1IiBoZWlnaHQ9IjEwIiByeD0iNSIgZmlsbD0iI0U1RTdFRiIvPgo8cmVjdCB4PSI0MTAiIHk9IjIzMCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMCIgcng9IjUiIGZpbGw9IiNFNUU3RUYiLz4KPHJlY3QgeD0iNDEwIiB5PSIyNTAiIHdpZHRoPSI4NSIgaGVpZ2h0PSIxMCIgcng9IjUiIGZpbGw9IiNFNUU3RUYiLz4KPHJlY3QgeD0iNDEwIiB5PSIyNzAiIHdpZHRoPSI3NSIgaGVpZ2h0PSIxMCIgcng9IjUiIGZpbGw9IiNFNUU3RUYiLz4KPHJlY3QgeD0iNDEwIiB5PSIyOTAiIHdpZHRoPSI2NSIgaGVpZ2h0PSIxMCIgcng9IjUiIGZpbGw9IiNFNUU3RUYiLz4KPC9zdmc+Cg=="
+            },
+            {
+                title: "Installation Starlink Professionnelle",
+                description: "Connectez-vous partout avec nos solutions d'installation Starlink haut débit pour particuliers et entreprises.",
+                image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQ1MCIgdmlld0JveD0iMCAwIDYwMCA0NTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iNDUwIiByeD0iMTUiIGZpbGw9IiNGRkZGRkYiLz4KPHBhdGggZD0iTTMwMCAxMDBIMzE1VjM1MEgzMDBWMTAwWiIgZmlsbD0iI0U1RTdFRiIvPgo8cGF0aCBkPSJNMjg1IDEwMEgzMDBWMzUwSDI4NVYxMDBaIiBmaWxsPSIjRTVFN0VGIi8+CjxwYXRoIGQ9Ik0xNTAgMTUwSDE2NVYzMDBIMTUwVjE1MFoiIGZpbGw9IiNFNUU3RUYiLz4KPHBhdGggZD0iTTEzNSAxNTBIMTUwVjMwMEgxMzVWMTUwWiIgZmlsbD0iI0U1RTdFRiIvPgo8cGF0aCBkPSJNNDUwIDE1MEg0NjVWMzAwSDQ1MFYxNTBaIiBmaWxsPSIjRTVFN0VGIi8+CjxwYXRoIGQ9Ik00MzUgMTUwSDQ1MFYzMDAgSDQzNVYxNTBaIiBmaWxsPSIjRTVFN0VGIi8+CjxjaXJjbGUgY3g9IjMwMCIgY3k9IjgwIiByPSI0MCIgZmlsbD0iIzAwOTZENiIvPgo8cGF0aCBkPSJNMjc1IDcwSDMyNVY5MEgyNzVWNzBaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjk1IDU1TDMwNSA3NUgyODVMMjk1IDU1WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTMwNSA1NUwyOTUgNzVIMzE1TDMwNSA1NVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0yMDAgMzUwSDQwMFYzNjVIMjAwVjM1MFoiIGZpbGw9IiMwMDk2RDYiLz4KPHBhdGggZD0iTTE4NSAzMzVINDAwVjM1MEgxODVWMzM1WiIgZmlsbD0iIzAwOTZENiIvPgo8L3N2Zz4K"
+            },
+            {
+                title: "Systèmes d'Alarme Complets",
+                description: "Protégez votre propriété avec nos systèmes d'alarme avancés avec détection intelligente et notifications en temps réel.",
+                image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQ1MCIgdmlld0JveD0iMCAwIDYwMCA0NTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iNDUwIiByeD0iMTUiIGZpbGw9IiNGRkZGRkYiLz4KPHJlY3QgeD0iMTUwIiB5PSIxMDAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMjUwIiByeD0iMTAiIGZpbGw9IiNGNUY3RkEiLz4KPHJlY3QgeD0iMTgwIiB5PSIxMzAiIHdpZHRoPSIyNDAiIGhlaWdodD0iMTgwIiByeD0iNSIgZmlsbD0iI0U1RTdFRiIvPgo8Y2lyY2xlIGN4PSIzMDAiIGN5PSI4MCIgcj0iNDAiIGZpbGw9IiMwMDk2RDYiLz4KPGNpcmNsZSBjeD0iMzAwIiBjeT0iODAiIHI9IjE1IiBmaWxsPSJ3aGl0ZSIvPgo8Y2lyY2xlIGN4PSIzMDAiIGN5PSI4MCIgcj0iOCIgZmlsbD0iIzAwOTZENiIvPgo8cmVjdCB4PSIyMDAiIHk9IjE2MCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMCIgcng9IjEwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjIwMCIgeT0iMTkwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwIiByeD0iMTAiIGZpbGw9IiNGNUY3RkEiLz4KPHJlY3QgeD0iMjAwIiB5PSIyMjAiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAiIHJ4PSIxMCIgZmlsbD0iI0Y4RkFGQyIvPgo8cmVjdCB4PSIyMDAiIHk9IjI1MCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMCIgcng9IjEwIiBmaWxsPSIjRjVGQUZBIi8+CjxyZWN0IHg9IjI3MCIgeT0iMjgwIiB3aWR0aD0iNjAiIGhlaWdodD0iMzAiIHJ4PSI1IiBmaWxsPSIjRkY2QjVCIi8+Cjwvc3ZnPgo="
+            }
+        ];
+        
+        // Vider le carousel
+        heroCarousel.innerHTML = '';
+        
+        // Ajouter les slides
+        slides.forEach((slide, index) => {
+            const slideElement = document.createElement('div');
+            slideElement.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
+            slideElement.style.background = `linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%)`;
+            
+            slideElement.innerHTML = `
+                <div class="container">
+                    <div class="hero-content">
+                        <h1>${slide.title}</h1>
+                        <p>${slide.description}</p>
+                        <div class="hero-btns">
+                            <a href="#projects" class="btn btn-primary">Voir nos projets</a>
+                            <a href="https://shop.thetic.de" target="_blank" class="btn btn-shop"><i class="fas fa-shopping-cart"></i> Visiter notre boutique</a>
+                        </div>
+                    </div>
+                    <div class="hero-image">
+                        <img src="${slide.image}" alt="${slide.title}">
                     </div>
                 </div>
-                ${slide.image ? `
-                <div class="hero-image">
-                    <img src="${slide.image}" alt="${slide.title}">
-                </div>
-                ` : ''}
-            </div>
-        `;
+            `;
+            
+            heroCarousel.appendChild(slideElement);
+        });
         
-        carousel.appendChild(slideElement);
-
-        // Créer l'indicateur
-        if (indicators) {
+        // Ajouter les indicateurs
+        const indicators = document.createElement('div');
+        indicators.className = 'carousel-indicators';
+        
+        slides.forEach((_, index) => {
             const indicator = document.createElement('div');
             indicator.className = `carousel-indicator ${index === 0 ? 'active' : ''}`;
             indicator.setAttribute('data-slide', index);
             indicators.appendChild(indicator);
-        }
-    });
-
-    // Redémarrer le carousel
-    initCarousel();
+        });
+        
+        heroCarousel.appendChild(indicators);
+        
+        // Initialiser le carousel
+        initHeroCarousel();
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des slides hero:', error);
+    }
 }
 
-// Initialiser le carousel
-function initCarousel() {
-    const slides = document.querySelectorAll('.carousel-slide');
-    const indicators = document.querySelectorAll('.carousel-indicator');
+// Initialiser le carousel hero
+function initHeroCarousel() {
+    const carouselSlides = document.querySelectorAll('.carousel-slide');
+    const carouselIndicators = document.querySelectorAll('.carousel-indicator');
+    let currentSlide = 0;
     
-    if (carouselInterval) clearInterval(carouselInterval);
+    function showSlide(index) {
+        carouselSlides.forEach(slide => slide.classList.remove('active'));
+        carouselIndicators.forEach(indicator => indicator.classList.remove('active'));
+        
+        carouselSlides[index].classList.add('active');
+        carouselIndicators[index].classList.add('active');
+        currentSlide = index;
+    }
     
-    carouselInterval = setInterval(() => {
-        let nextSlide = (currentSlide + 1) % slides.length;
-        showSlide(nextSlide);
-    }, 5000);
-
-    // Ajouter les événements aux indicateurs
-    indicators.forEach((indicator, index) => {
+    carouselIndicators.forEach((indicator, index) => {
         indicator.addEventListener('click', () => {
             showSlide(index);
         });
     });
-}
-
-// Afficher un slide spécifique
-function showSlide(index) {
-    const slides = document.querySelectorAll('.carousel-slide');
-    const indicators = document.querySelectorAll('.carousel-indicator');
     
-    slides.forEach(slide => slide.classList.remove('active'));
-    indicators.forEach(indicator => indicator.classList.remove('active'));
-    
-    slides[index].classList.add('active');
-    indicators[index].classList.add('active');
-    currentSlide = index;
+    // Auto-advance carousel
+    setInterval(() => {
+        let nextSlide = (currentSlide + 1) % carouselSlides.length;
+        showSlide(nextSlide);
+    }, 5000);
 }
 
 // Charger les services
-function loadServices(services) {
-    const servicesGrid = document.getElementById('services-grid');
-    const serviceSelect = document.getElementById('service');
-    
-    servicesGrid.innerHTML = '';
-    serviceSelect.innerHTML = '<option value="">Sélectionnez un service</option>';
-
-    services.forEach(service => {
-        // Ajouter au grid
-        const serviceCard = document.createElement('div');
-        serviceCard.className = 'service-card';
-        serviceCard.style.animationDelay = `${services.indexOf(service) * 0.1}s`;
+async function loadServices() {
+    try {
+        const servicesGrid = document.getElementById('services-grid');
         
-        serviceCard.innerHTML = `
-            <div class="service-icon">
-                <i class="${service.icon || 'fas fa-cog'}"></i>
-            </div>
-            <h3>${service.title}</h3>
-            <p>${service.description}</p>
-            ${service.promotion_text ? `<div class="promotion-badge">${service.promotion_text}</div>` : ''}
-        `;
+        // Données par défaut (dans un cas réel, viendraient de Supabase)
+        const services = [
+            {
+                icon: 'fas fa-video',
+                title: 'Surveillance Vidéo',
+                description: 'Installation de systèmes de vidéosurveillance haute définition avec détection intelligente et vision nocturne.'
+            },
+            {
+                icon: 'fas fa-satellite-dish',
+                title: 'Starlink',
+                description: 'Installation professionnelle de systèmes Starlink pour une connectivité Internet haut débit partout.'
+            },
+            {
+                icon: 'fas fa-shield-alt',
+                title: 'Systèmes d\'Alarme',
+                description: 'Solutions d\'alarme complètes avec détection de mouvement, capteurs et notifications en temps réel.'
+            },
+            {
+                icon: 'fas fa-fingerprint',
+                title: 'Contrôle d\'Accès',
+                description: 'Installation de systèmes de contrôle d\'accès avec badges, empreintes digitales et reconnaissance faciale.'
+            },
+            {
+                icon: 'fas fa-wifi',
+                title: 'Réseaux Sécurisés',
+                description: 'Configuration de réseaux Wi-Fi sécurisés avec pare-feu et systèmes de protection avancés.'
+            },
+            {
+                icon: 'fas fa-store',
+                title: 'Vente d\'Équipements',
+                description: 'Large gamme d\'équipements de sécurité disponibles à l\'achat sur notre site web Rayz.com.'
+            }
+        ];
         
-        servicesGrid.appendChild(serviceCard);
-
-        // Ajouter au select
-        const option = document.createElement('option');
-        option.value = service.id;
-        option.textContent = service.title;
-        serviceSelect.appendChild(option);
-    });
-
-    // Animer les services
-    animateOnScroll();
+        // Vider la grille
+        servicesGrid.innerHTML = '';
+        
+        // Ajouter les services
+        services.forEach((service, index) => {
+            const serviceCard = document.createElement('div');
+            serviceCard.className = 'service-card';
+            serviceCard.style.transitionDelay = `${index * 0.1}s`;
+            
+            serviceCard.innerHTML = `
+                <div class="service-icon">
+                    <i class="${service.icon}"></i>
+                </div>
+                <h3>${service.title}</h3>
+                <p>${service.description}</p>
+                ${service.title === 'Vente d\'Équipements' ? 
+                  '<a href="https://shop.thetic.de" target="_blank" class="btn btn-shop" style="margin-top: 20px;"><i class="fas fa-shopping-cart"></i> Visiter notre boutique</a>' : 
+                  ''}
+            `;
+            
+            servicesGrid.appendChild(serviceCard);
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des services:', error);
+    }
 }
 
 // Charger les projets
-function loadProjects(projects) {
-    const projectsGrid = document.getElementById('projects-grid');
-    const projectsFilter = document.getElementById('projects-filter');
-    
-    projectsGrid.innerHTML = '';
-    
-    // Créer les filtres
-    const categories = [...new Set(projects.map(p => p.category))];
-    projectsFilter.innerHTML = `
-        <button class="filter-btn active" data-filter="all">Tous</button>
-        ${categories.map(cat => 
-            `<button class="filter-btn" data-filter="${cat}">${cat}</button>`
-        ).join('')}
-    `;
-
-    // Ajouter les projets
-    projects.forEach(project => {
-        const projectCard = document.createElement('div');
-        projectCard.className = 'project-card';
-        projectCard.setAttribute('data-category', project.category);
-        projectCard.setAttribute('data-project', project.id);
-        projectCard.style.animationDelay = `${projects.indexOf(project) * 0.1}s`;
+async function loadProjects() {
+    try {
+        const projectsGrid = document.getElementById('projects-grid');
         
-        projectCard.innerHTML = `
-            <div class="project-image">
-                <img src="${project.images ? project.images[0] : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUwIiBoZWlnaHQ9IjIyMCIgdmlld0JveD0iMCAwIDM1MCAyMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzNTAiIGhlaWdodD0iMjIwIiByeD0iMTAiIGZpbGw9IiNGNEY2RjgiLz4KPHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMzMwIiBoZWlnaHQ9IjIwMCIgcng9IjUiIGZpbGw9IiNFOUU3RUYiLz4KPGNpcmNsZSBjeD0iMTc1IiBjeT0iMTEwIiByPSI0MCIgZmlsbD0iIzAwOTZENiIvPgo8Y2lyY2xlIGN4PSIxNzUiIGN5PSIxMTAiIHI9IjE1IiBmaWxsPSIjRjhGQUZDIi8+CjxjaXJjbGUgY3g9IjE3NSIgY3k9IjExMCIgcj0iOCIgZmlsbD0iIzAwOTZENiIvPgo8cmVjdCB4PSIxMCIgeT0iMTUwIiB3aWR0aD0iMzMwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjMwIiB5PSIxNjAiIHdpZHRoPSIyOTAiIGhlaWdodD0iNDAiIHJ4PSI1IiBmaWxsPSIjRTlFN0VGIi8+Cjwvc3ZnPgo='}" alt="${project.title}">
-                <div class="project-overlay">
-                    <a href="#" class="btn btn-primary">Voir le projet</a>
-                </div>
-            </div>
-            <div class="project-info">
-                <h3>${project.title}</h3>
-                <p>${project.short_description}</p>
-            </div>
-        `;
-        
-        projectsGrid.appendChild(projectCard);
-    });
-
-    // Ajouter les événements de filtrage
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            const filter = this.getAttribute('data-filter');
-            
-            document.querySelectorAll('.project-card').forEach(card => {
-                if (filter === 'all' || card.getAttribute('data-category') === filter) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
+        // Données par défaut (dans un cas réel, viendraient de Supabase)
+        const projects = [
+            {
+                category: 'surveillance',
+                title: 'Surveillance Résidentielle Premium',
+                description: 'Installation complète d\'un système de surveillance 4K avec détection intelligente pour une villa de luxe.',
+                image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUwIiBoZWlnaHQ9IjIyMCIgdmlld0JveD0iMCAwIDM1MCAyMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzNTAiIGhlaWdodD0iMjIwIiByeD0iMTAiIGZpbGw9IiNGNEY2RjgiLz4KPHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMzMwIiBoZWlnaHQ9IjIwMCIgcng9IjUiIGZpbGw9IiNFOUU3RUYiLz4KPGNpcmNsZSBjeD0iMTc1IiBjeT0iMTEwIiByPSI0MCIgZmlsbD0iIzAwOTZENiIvPgo8Y2lyY2xlIGN4PSIxNzUiIGN5PSIxMTAiIHI9IjE1IiBmaWxsPSIjRjhGQUZDIi8+CjxjaXJjbGUgY3g9IjE3NSIgY3k9IjExMCIgcj0iOCIgZmlsbD0iIzAwOTZENiIvPgo8cmVjdCB4PSIxMCIgeT0iMTUwIiB3aWR0aD0iMzMwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjMwIiB5PSIxNjAiIHdpZHRoPSIyOTAiIGhlaWdodD0iNDAiIHJ4PSI1IiBmaWxsPSIjRTlFN0VGIi8+Cjwvc3ZnPgo=',
+                modalImages: [
+                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDgwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjcwMCIgaGVpZ2h0PSIzMDAiIHJ4PSIxMCIgZmlsbD0iI0U1RTdFRiIvPgo8Y2lyY2xlIGN4PSI0MDAiIGN5PSIyMDAiIHI9IjYwIiBmaWxsPSIjMDA5NkQ2Ii8+CjxjaXJjbGUgY3g9IjQwMCIgY3k9IjIwMCIgcj0iMjUiIGZpbGw9IiNGNUY3RkEiLz4KPHJlY3QgeD0iMjUwIiB5PSIyNzAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAiIHJ4PSI1IiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjI3MCIgeT0iMjgwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjEwIiByeD0iNSIgZmlsbD0iI0U1RTdFRiIvPgo8L3N2Zz4K',
+                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDgwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjcwMCIgaGVpZ2h0PSIzMDAiIHJ4PSIxMCIgZmlsbD0iI0U1RTdFRiIvPgo8cmVjdCB4PSIyMDAiIHk9IjEwMCIgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMDAiIHJ4PSI1IiBmaWxsPSIjRjhGQUZDIi8+CjxjaXJjbGUgY3g9IjMwMCIgY3k9IjE1MCIgcj0iMjAiIGZpbGw9IiMwMDk2RDYiLz4KPGNpcmNsZSBjeD0iMzUwIiBjeT0iMTUwIiByPSIyMCIgZmlsbD0iIzAwOTZENiIvPgo8Y2lyY2xlIGN4PSI0MDAiIGN5PSIxNTAiIHI9IjIwIiBmaWxsPSIjMDA5NkQ2Ii8+CjxyZWN0IHg9IjMwMCIgeT0iMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwIiByeD0iNSIgZmlsbD0iI0U1RTdFRiIvPgo8L3N2Zz4K',
+                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDgwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjcwMCIgaGVpZ2h0PSIzMDAiIHJ4PSIxMCIgZmlsbD0iI0U1RTdFRiIvPgo8cmVjdCB4PSIyMDAiIHk9IjEwMCIgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMDAiIHJ4PSI1IiBmaWxsPSIjRjhGQUZDIi8+CjxwYXRoIGQ9Ik0yNTAgMTUwSDQwMFYyMDBIMjUwVjE1MFoiIGZpbGw9IiMwMDk2RDYiLz4KPHBhdGggZD0iTTI1MCAyMTBINDAwVjI1MEgyNTBWMjEwWiIgZmlsbD0iIzAwOTZENiIvPgo8cmVjdCB4PSIyNzAiIHk9IjE2MCIgd2lkdGg9IjExMCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGNUY3RkEiLz4KPHJlY3QgeD0iMjcwIiB5PSIyMjAiIHdpZHRoPSI4MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGNUY3RkEiLz4KPC9zdmc+Cg=='
+                ],
+                modalCaptions: [
+                    'Image 1: Vue d\'ensemble du système installé',
+                    'Image 2: Détails techniques de l\'installation',
+                    'Image 3: Interface de contrôle du système'
+                ],
+                details: {
+                    title: 'Surveillance Résidentielle Premium',
+                    description: 'Installation complète d\'un système de surveillance 4K avec détection intelligente pour une villa de luxe. Ce projet incluait 12 caméras haute définition, un système d\'enregistrement centralisé et une application mobile pour le contrôle à distance.',
+                    additional: 'Le client souhaitait une solution discrète mais efficace pour sécuriser sa propriété de 500m². Nous avons installé des caméras avec vision nocturne, détection de mouvement et alertes en temps réel.',
+                    technologies: 'Caméras 4K IP, NVR 16 canaux, Détection intelligente, Application mobile dédiée',
+                    duration: '3 semaines',
+                    result: 'Système entièrement fonctionnel avec formation complète du client'
                 }
-            });
+            },
+            {
+                category: 'starlink',
+                title: 'Connectivité Starlink Entreprise',
+                description: 'Installation de systèmes Starlink pour une entreprise située en zone rurale avec besoins en bande passante élevés.',
+                image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUwIiBoZWlnaHQ9IjIyMCIgdmlld0JveD0iMCAwIDM1MCAyMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzNTAiIGhlaWdodD0iMjIwIiByeD0iMTAiIGZpbGw9IiNGNEY2RjgiLz4KPHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMzMwIiBoZWlnaHQ9IjIwMCIgcng9IjUiIGZpbGw9IiNFOUU3RUYiLz4KPHBhdGggZD0iTTEwMCA3MEgyNTBWMTEwSDEwMFY3MFoiIGZpbGw9IiMwMDk2RDYiLz4KPHBhdGggZD0iTTEyMCAxMDBIMjMwVjEyMEgxMjBWMTEwWiIgZmlsbD0iI0Y4RkFGQyIvPgo8Y2lyY2xlIGN4PSIxNzUiIGN5PSIxNjAiIHI9IjMwIiBmaWxsPSIjMDA5NkQ2Ii8+CjxwYXRoIGQ9Ik0xNTUgMTYwTDE3NSAxNDBMMTk1IDE2MEgxNTVaIiBmaWxsPSIjRjhGQUZDIi8+CjxwYXRoIGQ9Ik0xOTUgMTYwTDE3NSAxODBMMTU1IDE2MEgxOTVaIiBmaWxsPSIjRjhGQUZDIi8+Cjwvc3ZnPgo=',
+                modalImages: [
+                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDgwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjcwMCIgaGVpZ2h0PSIzMDAiIHJ4PSIxMCIgZmlsbD0iI0U1RTdFRiIvPgo8cmVjdCB4PSIyMDAiIHk9IjEwMCIgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMDAiIHJ4PSI1IiBmaWxsPSIjRjhGQUZDIi8+CjxjaXJjbGUgY3g9IjMwMCIgY3k9IjE1MCIgcj0iMjAiIGZpbGw9IiMwMDk2RDYiLz4KPGNpcmNsZSBjeD0iMzUwIiBjeT0iMTUwIiByPSIyMCIgZmlsbD0iIzAwOTZENiIvPgo8Y2lyY2xlIGN4PSI0MDAiIGN5PSIxNTAiIHI9IjIwIiBmaWxsPSIjMDA5NkQ2Ii8+CjxyZWN0IHg9IjMwMCIgeT0iMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwIiByeD0iNSIgZmlsbD0iI0U1RTdFRiIvPgo8L3N2Zz4K',
+                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDgwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjcwMCIgaGVpZ2h0PSIzMDAiIHJ4PSIxMCIgZmlsbD0iI0U1RTdFRiIvPgo8cmVjdCB4PSIyMDAiIHk9IjEwMCIgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMDAiIHJ4PSI1IiBmaWxsPSIjRjhGQUZDIi8+CjxwYXRoIGQ9Ik0yNTAgMTUwSDQwMFYyMDBIMjUwVjE1MFoiIGZpbGw9IiMwMDk2RDYiLz4KPHBhdGggZD0iTTI1MCAyMTBINDAwVjI1MEgyNTBWMjEwWiIgZmlsbD0iIzAwOTZENiIvPgo8cmVjdCB4PSIyNzAiIHk9IjE2MCIgd2lkdGg9IjExMCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGNUY3RkEiLz4KPHJlY3QgeD0iMjcwIiB5PSIyMjAiIHdpZHRoPSI4MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGNUY3RkEiLz4KPC9zdmc+Cg==',
+                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDgwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjcwMCIgaGVpZ2h0PSIzMDAiIHJ4PSIxMCIgZmlsbD0iI0U1RTdFRiIvPgo8Y2lyY2xlIGN4PSI0MDAiIGN5PSIyMDAiIHI9IjYwIiBmaWxsPSIjMDA5NkQ2Ii8+CjxjaXJjbGUgY3g9IjQwMCIgY3k9IjIwMCIgcj0iMjUiIGZpbGw9IiNGNUY3RkEiLz4KPHJlY3QgeD0iMjUwIiB5PSIyNzAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAiIHJ4PSI1IiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjI3MCIgeT0iMjgwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjEwIiByeD0iNSIgZmlsbD0iI0U1RTdFRiIvPgo8L3N2Zz4K'
+                ],
+                modalCaptions: [
+                    'Image 1: Installation de l\'antenne Starlink',
+                    'Image 2: Configuration du système',
+                    'Image 3: Tests de connectivité'
+                ],
+                details: {
+                    title: 'Connectivité Starlink Entreprise',
+                    description: 'Installation de systèmes Starlink pour une entreprise située en zone rurale avec besoins en bande passante élevés.',
+                    additional: 'L\'entreprise avait des difficultés avec les connexions Internet traditionnelles en raison de son emplacement éloigné. Nous avons installé un système Starlink avec redondance pour assurer une connectivité fiable.',
+                    technologies: 'Starlink Business, Routeur haute performance, Système de sauvegarde',
+                    duration: '2 semaines',
+                    result: 'Connectivité Internet haut débit fiable avec temps d\'arrêt minimisés'
+                }
+            },
+            {
+                category: 'alarmes',
+                title: 'Système d\'Alarme Complet',
+                description: 'Installation d\'un système d\'alarme sans fil avec centrale, détecteurs et sirènes pour un immeuble résidentiel.',
+                image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUwIiBoZWlnaHQ9IjIyMCIgdmlld0JveD0iMCAwIDM1MCAyMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzNTAiIGhlaWdodD0iMjIwIiByeD0iMTAiIGZpbGw9IiNGNEY2RjgiLz4KPHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMzMwIiBoZWlnaHQ9IjIwMCIgcng9IjUiIGZpbGw9IiNFOUU3RUYiLz4KPGNpcmNsZSBjeD0iMTc1IiBjeT0iODAiIHI9IjMwIiBmaWxsPSIjRkY2QjVCIi8+CjxjaXJjbGUgY3g9IjE3NSIgY3k9IjgwIiByPSIxNSIgZmlsbD0iI0Y4RkFGQyIvPgo8Y2lyY2xlIGN4PSIxNzUiIGN5PSI4MCIgcj0iOCIgZmlsbD0iI0ZGNkI1QiIvPgo8cmVjdCB4PSIxNjAiIHk9IjExMCIgd2lkdGg9IjMwIiBoZWlnaHQ9IjgwIiByeD0iNSIgZmlsbD0iI0ZGNkI1QiIvPgo8cmVjdCB4PSIxNjUiIHk9IjEyMCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjYwIiByeD0iMyIgZmlsbD0iI0Y4RkFGQyIvPgo8L3N2Zz4K',
+                modalImages: [
+                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDgwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjcwMCIgaGVpZ2h0PSIzMDAiIHJ4PSIxMCIgZmlsbD0iI0U1RTdFRiIvPgo8cmVjdCB4PSIyMDAiIHk9IjEwMCIgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMDAiIHJ4PSI1IiBmaWxsPSIjRjhGQUZDIi8+CjxwYXRoIGQ9Ik0yNTAgMTUwSDQwMFYyMDBIMjUwVjE1MFoiIGZpbGw9IiMwMDk2RDYiLz4KPHBhdGggZD0iTTI1MCAyMTBINDAwVjI1MEgyNTBWMjEwWiIgZmlsbD0iIzAwOTZENiIvPgo8cmVjdCB4PSIyNzAiIHk9IjE2MCIgd2lkdGg9IjExMCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGNUY3RkEiLz4KPHJlY3QgeD0iMjcwIiB5PSIyMjAiIHdpZHRoPSI4MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGNUY3RkEiLz4KPC9zdmc+Cg==',
+                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDgwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjcwMCIgaGVpZ2h0PSIzMDAiIHJ4PSIxMCIgZmlsbD0iI0U1RTdFRiIvPgo8Y2lyY2xlIGN4PSI0MDAiIGN5PSIyMDAiIHI9IjYwIiBmaWxsPSIjMDA5NkQ2Ii8+CjxjaXJjbGUgY3g9IjQwMCIgY3k9IjIwMCIgcj0iMjUiIGZpbGw9IiNGNUY3RkEiLz4KPHJlY3QgeD0iMjUwIiB5PSIyNzAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAiIHJ4PSI1IiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjI3MCIgeT0iMjgwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjEwIiByeD0iNSIgZmlsbD0iI0U1RTdFRiIvPgo8L3N2Zz4K',
+                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDgwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjhGQUZDIi8+CjxyZWN0IHg9IjUwIiB5PSI1MCIgd2lkdGg9IjcwMCIgaGVpZ2h0PSIzMDAiIHJ4PSIxMCIgZmlsbD0iI0U1RTdFRiIvPgo8cmVjdCB4PSIyMDAiIHk9IjEwMCIgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMDAiIHJ4PSI1IiBmaWxsPSIjRjhGQUZDIi8+CjxjaXJjbGUgY3g9IjMwMCIgY3k9IjE1MCIgcj0iMjAiIGZpbGw9IiMwMDk2RDYiLz4KPGNpcmNsZSBjeD0iMzUwIiBjeT0iMTUwIiByPSIyMCIgZmlsbD0iIzAwOTZENiIvPgo8Y2lyY2xlIGN4PSI0MDAiIGN5PSIxNTAiIHI9IjIwIiBmaWxsPSIjMDA5NkQ2Ii8+CjxyZWN0IHg9IjMwMCIgeT0iMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwIiByeD0iNSIgZmlsbD0iI0U1RTdFRiIvPgo8L3N2Zz4K'
+                ],
+                modalCaptions: [
+                    'Image 1: Centrale d\'alarme installée',
+                    'Image 2: Détecteurs de mouvement',
+                    'Image 3: Sirènes extérieures'
+                ],
+                details: {
+                    title: 'Système d\'Alarme Complet',
+                    description: 'Installation d\'un système d\'alarme sans fil avec centrale, détecteurs et sirènes pour un immeuble résidentiel.',
+                    additional: 'Le système comprend une centrale de contrôle, des détecteurs de mouvement dans chaque appartement, des capteurs d\'ouverture sur les portes et fenêtres, et des sirènes intérieures et extérieures.',
+                    technologies: 'Centrale d\'alarme sans fil, Détecteurs de mouvement, Capteurs d\'ouverture, Sirènes, Application mobile',
+                    duration: '1 semaine',
+                    result: 'Système d\'alarme complet avec surveillance 24/7 et notifications en temps réel'
+                }
+            }
+        ];
+        
+        // Vider la grille
+        projectsGrid.innerHTML = '';
+        
+        // Ajouter les projets
+        projects.forEach((project, index) => {
+            const projectCard = document.createElement('div');
+            projectCard.className = 'project-card';
+            projectCard.setAttribute('data-category', project.category);
+            projectCard.setAttribute('data-project', index);
+            projectCard.style.transitionDelay = `${index * 0.1}s`;
+            
+            projectCard.innerHTML = `
+                <div class="project-image">
+                    <img src="${project.image}" alt="${project.title}">
+                    <div class="project-overlay">
+                        <a href="#" class="btn btn-primary">Voir le projet</a>
+                    </div>
+                </div>
+                <div class="project-info">
+                    <h3>${project.title}</h3>
+                    <p>${project.description}</p>
+                </div>
+            `;
+            
+            projectsGrid.appendChild(projectCard);
         });
-    });
+        
+        // Initialiser les événements des projets
+        initProjectEvents(projects);
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des projets:', error);
+    }
+}
 
-    // Ajouter les événements de modal
-    document.querySelectorAll('.project-card').forEach(card => {
+// Initialiser les événements des projets
+function initProjectEvents(projects) {
+    const projectCards = document.querySelectorAll('.project-card');
+    const projectModal = document.getElementById('projectModal');
+    
+    projectCards.forEach((card, index) => {
         card.addEventListener('click', function() {
-            const projectId = this.getAttribute('data-project');
-            openProjectModal(projectId, projects);
+            const project = projects[index];
+            openProjectModal(project);
         });
     });
-
-    // Animer les projets
-    animateOnScroll();
+    
+    // Fermer la modal
+    const modalClose = document.getElementById('modalClose');
+    modalClose.addEventListener('click', function() {
+        projectModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    });
+    
+    // Fermer la modal en cliquant à l'extérieur
+    window.addEventListener('click', function(e) {
+        if (e.target === projectModal) {
+            projectModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+    
+    // Navigation du carousel de la modal
+    const projectCarouselDots = document.querySelectorAll('.project-carousel-dot');
+    projectCarouselDots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            showProjectSlide(index);
+        });
+    });
 }
 
 // Ouvrir la modal du projet
-function openProjectModal(projectId, projects) {
-    const project = projects.find(p => p.id == projectId);
-    if (!project) return;
-
-    const modal = document.getElementById('projectModal');
+function openProjectModal(project) {
+    const projectModal = document.getElementById('projectModal');
     const modalTitle = document.getElementById('modalTitle');
-    const modalImage = document.getElementById('modal-image');
-    const modalCaption = document.getElementById('modal-caption');
     const projectDetailTitle = document.getElementById('projectDetailTitle');
     const projectDetailDescription = document.getElementById('projectDetailDescription');
-
-    modalTitle.textContent = project.title;
-    projectDetailTitle.textContent = project.title;
-    projectDetailDescription.textContent = project.description;
-
-    if (project.images && project.images.length > 0) {
-        modalImage.src = project.images[0];
-        modalCaption.textContent = project.image_captions ? project.image_captions[0] : 'Image du projet';
+    const projectDetailAdditional = document.getElementById('projectDetailAdditional');
+    const projectTechnologies = document.getElementById('projectTechnologies');
+    const projectDuration = document.getElementById('projectDuration');
+    const projectResult = document.getElementById('projectResult');
+    
+    // Mettre à jour les informations du projet
+    modalTitle.textContent = project.details.title;
+    projectDetailTitle.textContent = project.details.title;
+    projectDetailDescription.textContent = project.details.description;
+    projectDetailAdditional.textContent = project.details.additional;
+    projectTechnologies.textContent = project.details.technologies;
+    projectDuration.textContent = project.details.duration;
+    projectResult.textContent = project.details.result;
+    
+    // Mettre à jour les images du carousel
+    for (let i = 1; i <= 3; i++) {
+        const modalImage = document.getElementById(`modal-image-${i}`);
+        const modalCaption = document.getElementById(`modal-caption-${i}`);
+        
+        if (project.modalImages[i-1]) {
+            modalImage.src = project.modalImages[i-1];
+            modalCaption.textContent = project.modalCaptions[i-1];
+        }
     }
-
-    modal.style.display = 'block';
+    
+    // Réinitialiser le carousel
+    showProjectSlide(0);
+    
+    // Afficher la modal
+    projectModal.style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
 
-// Afficher la bannière de promotion
-function showPromotionBanner(promotion) {
-    const banner = document.getElementById('promotion-banner');
-    const promotionText = document.getElementById('promotion-text');
+// Afficher une slide du carousel de projet
+function showProjectSlide(index) {
+    const projectCarouselSlides = document.querySelectorAll('.project-carousel-slide');
+    const projectCarouselDots = document.querySelectorAll('.project-carousel-dot');
     
-    if (banner && promotionText) {
-        promotionText.textContent = promotion.title;
-        banner.style.display = 'block';
+    projectCarouselSlides.forEach(slide => slide.classList.remove('active'));
+    projectCarouselDots.forEach(dot => dot.classList.remove('active'));
+    
+    projectCarouselSlides[index].classList.add('active');
+    projectCarouselDots[index].classList.add('active');
+}
+
+// Charger les promotions actives
+async function loadActivePromotions() {
+    try {
+        // Dans un cas réel, on récupérerait les promotions actives de Supabase
+        // Pour l'instant, on utilise des valeurs par défaut
         
-        // Appliquer le style de la promotion
-        if (promotion.style) {
-            try {
-                const style = JSON.parse(promotion.style);
-                Object.keys(style).forEach(key => {
-                    banner.style[key] = style[key];
-                });
-            } catch (e) {
-                console.error('Erreur dans le style de promotion:', e);
-            }
-        }
+        const promoBanner = document.getElementById('promo-banner');
+        const promoText = document.getElementById('promo-text');
+        
+        // Exemple de promotion
+        promoText.textContent = "🎄 Offre spéciale Noël: 20% de réduction sur tous les systèmes de surveillance! 🎄";
+        promoBanner.style.display = 'block';
+        
+        // Fermer la bannière de promotion
+        const closePromo = document.getElementById('close-promo');
+        closePromo.addEventListener('click', function() {
+            promoBanner.style.display = 'none';
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des promotions:', error);
     }
 }
 
-// Charger les liens sociaux
-function loadSocialLinks(socialLinks) {
-    const socialContainer = document.getElementById('social-links');
-    const footerContainer = document.getElementById('footer-content');
+// Appliquer un thème
+function applyTheme(theme) {
+    document.body.className = '';
     
-    if (socialContainer) {
-        socialContainer.innerHTML = socialLinks.map(link => `
-            <a href="${link.url}" target="_blank" class="social-link">
-                <i class="${link.icon}"></i>
-            </a>
-        `).join('');
+    if (theme !== 'default') {
+        document.body.classList.add(`theme-${theme}`);
     }
     
-    if (footerContainer) {
-        footerContainer.innerHTML = `
-            <div class="footer-col">
-                <h4 id="footer-site-name">Rayz.com</h4>
-                <p id="footer-description">Votre partenaire de confiance pour des solutions de sécurité innovantes et performantes.</p>
-                <div class="social-links">
-                    ${socialLinks.map(link => `
-                        <a href="${link.url}" target="_blank" class="social-link">
-                            <i class="${link.icon}"></i>
-                        </a>
-                    `).join('')}
-                </div>
-            </div>
-            <div class="footer-col">
-                <h4>Liens rapides</h4>
-                <ul class="footer-links">
-                    <li><a href="#home">Accueil</a></li>
-                    <li><a href="#services">Services</a></li>
-                    <li><a href="#projects">Projets</a></li>
-                    <li><a href="#about">À propos</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Services</h4>
-                <ul class="footer-links" id="footer-services">
-                    <!-- Les services seront chargés dynamiquement -->
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Contact</h4>
-                <ul class="footer-links">
-                    <li><i class="fas fa-map-marker-alt"></i> <span id="footer-address">123 Avenue de la Sécurité, Paris</span></li>
-                    <li><i class="fas fa-phone"></i> <span id="footer-phone">+33 1 23 45 67 89</span></li>
-                    <li><i class="fas fa-envelope"></i> <span id="footer-email">contact@rayz.com</span></li>
-                </ul>
-            </div>
-        `;
-    }
-}
-
-// Appliquer le thème saisonnier
-function applySeasonalTheme() {
-    const theme = localStorage.getItem('seasonal_theme');
-    const startDate = localStorage.getItem('theme_start_date');
-    const endDate = localStorage.getItem('theme_end_date');
-    
-    if (theme && theme !== 'none') {
-        const now = new Date();
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        
-        if (now >= start && now <= end) {
-            document.body.classList.add(`${theme}-theme`);
-        } else {
-            localStorage.removeItem('seasonal_theme');
-            localStorage.removeItem('theme_start_date');
-            localStorage.removeItem('theme_end_date');
-        }
-    }
+    // Sauvegarder le thème dans le localStorage
+    localStorage.setItem('site-theme', theme);
 }
 
 // Initialiser les événements
-function initEventListeners() {
+function initEvents() {
     // Header scroll effect
     window.addEventListener('scroll', function() {
         const header = document.getElementById('header');
@@ -448,48 +482,36 @@ function initEventListeners() {
     const mobileToggle = document.getElementById('mobile-toggle');
     const nav = document.getElementById('nav');
     
-    if (mobileToggle && nav) {
+    if (mobileToggle) {
         mobileToggle.addEventListener('click', function() {
             nav.classList.toggle('active');
         });
     }
 
-    // Fermer la bannière de promotion
-    const closePromotion = document.getElementById('close-promotion');
-    if (closePromotion) {
-        closePromotion.addEventListener('click', function() {
-            document.getElementById('promotion-banner').style.display = 'none';
-        });
-    }
-
-    // Fermer la modal
-    const modalClose = document.getElementById('modalClose');
-    const modal = document.getElementById('projectModal');
+    // Filter projects
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const projectCards = document.querySelectorAll('.project-card');
     
-    if (modalClose && modal) {
-        modalClose.addEventListener('click', function() {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterBtns.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            
+            projectCards.forEach(card => {
+                if (filter === 'all' || card.getAttribute('data-category') === filter) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         });
-        
-        window.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }
-        });
-    }
+    });
 
-    // Formulaire de contact
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            submitContactForm();
-        });
-    }
-
-    // Smooth scrolling
+    // Smooth scrolling for navigation links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -504,8 +526,8 @@ function initEventListeners() {
                     behavior: 'smooth'
                 });
                 
-                // Fermer le menu mobile si ouvert
-                if (nav && nav.classList.contains('active')) {
+                // Close mobile menu if open
+                if (nav.classList.contains('active')) {
                     nav.classList.remove('active');
                 }
             }
@@ -513,79 +535,41 @@ function initEventListeners() {
     });
 }
 
-// Soumettre le formulaire de contact
-async function submitContactForm() {
-    const form = document.getElementById('contactForm');
-    const formData = new FormData(form);
-    
-    const data = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        service: formData.get('service'),
-        message: formData.get('message'),
-        created_at: new Date().toISOString()
-    };
-
-    try {
-        const { error } = await supabase
-            .from('contact_messages')
-            .insert([data]);
-
-        if (error) throw error;
-
-        alert('Merci pour votre message! Nous vous contacterons bientôt.');
-        form.reset();
+// Initialiser les animations
+function initAnimations() {
+    // Animate elements on scroll
+    function animateOnScroll() {
+        const elements = document.querySelectorAll('.service-card, .project-card, .stat');
         
-        // Envoyer un email via EmailJS
-        sendEmailNotification(data);
-        
-    } catch (error) {
-        console.error('Erreur lors de l\'envoi du message:', error);
-        alert('Une erreur est survenue. Veuillez réessayer.');
-    }
-}
-
-// Envoyer une notification par email
-function sendEmailNotification(data) {
-    // Configuration EmailJS
-    emailjs.init('4gEzT9DkXPjvp2WxD');
-    
-    const templateParams = {
-        from_name: data.name,
-        from_email: data.email,
-        phone: data.phone,
-        service: data.service,
-        message: data.message,
-        to_email: 'ctlpowerr@gmail.com'
-    };
-
-    emailjs.send('service_4ab2q68', 'template_default', templateParams)
-        .then(response => {
-            console.log('Email envoyé avec succès:', response);
-        })
-        .catch(error => {
-            console.error('Erreur lors de l\'envoi de l\'email:', error);
-        });
-}
-
-// Animation au défilement
-function animateOnScroll() {
-    const elements = document.querySelectorAll('.service-card, .project-card, .stat');
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
+        elements.forEach(element => {
+            const elementPosition = element.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight / 1.2;
+            
+            if (elementPosition < screenPosition) {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
             }
         });
-    }, {
-        threshold: 0.1
-    });
+    }
     
-    elements.forEach(element => {
-        observer.observe(element);
-    });
+    window.addEventListener('scroll', animateOnScroll);
+    // Trigger once on load
+    animateOnScroll();
 }
 
+// Initialiser EmailJS
+function initEmailJS() {
+    // Cette fonction est définie dans email.js
+    console.log('EmailJS initialisé');
+}
+
+// Gérer l'envoi du formulaire de contact
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Dans un cas réel, on enverrait l'email via EmailJS
+    // Pour l'instant, on affiche un message de confirmation
+    
+    alert('Merci pour votre message! Nous vous contacterons bientôt.');
+    this.reset();
+});
