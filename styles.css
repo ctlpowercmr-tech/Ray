@@ -263,8 +263,8 @@ nav ul li a:hover:after {
     color: var(--primary);
 }
 
-/* Promotion Banner */
-.promotion-banner {
+/* Bannière de promotion */
+.promo-banner {
     background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
     color: white;
     padding: 15px 0;
@@ -273,26 +273,33 @@ nav ul li a:hover:after {
     z-index: 999;
 }
 
-.promotion-banner .container {
+.promo-content {
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
 }
 
-.close-promotion {
+.promo-text {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.close-promo {
     background: none;
     border: none;
     color: white;
     font-size: 1.5rem;
+    cursor: pointer;
     position: absolute;
     right: 0;
-    cursor: pointer;
+    top: 50%;
+    transform: translateY(-50%);
     transition: var(--transition);
 }
 
-.close-promotion:hover {
-    transform: scale(1.2);
+.close-promo:hover {
+    transform: translateY(-50%) scale(1.2);
 }
 
 /* Hero Section avec Carousel */
@@ -300,7 +307,7 @@ nav ul li a:hover:after {
     height: 100vh;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    margin-top: 80px;
 }
 
 .hero-carousel {
@@ -931,6 +938,50 @@ footer {
     }
 }
 
+/* Thèmes saisonniers */
+body.theme-noel {
+    --primary: #D32F2F;
+    --primary-light: #EF5350;
+    --primary-dark: #B71C1C;
+    --secondary: #2E7D32;
+    --secondary-light: #4CAF50;
+    --secondary-dark: #1B5E20;
+}
+
+body.theme-noel .hero {
+    background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%);
+}
+
+body.theme-noel .promo-banner {
+    background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+}
+
+body.theme-blackfriday {
+    --primary: #000000;
+    --primary-light: #333333;
+    --primary-dark: #000000;
+    --secondary: #FF6B35;
+    --secondary-light: #FF8E5E;
+    --secondary-dark: #E55A20;
+}
+
+body.theme-blackfriday .hero {
+    background: linear-gradient(135deg, #000000 0%, #333333 100%);
+}
+
+body.theme-summer {
+    --primary: #0288D1;
+    --primary-light: #03A9F4;
+    --primary-dark: #01579B;
+    --secondary: #FF9800;
+    --secondary-light: #FFB74D;
+    --secondary-dark: #F57C00;
+}
+
+body.theme-summer .hero {
+    background: linear-gradient(135deg, #0288D1 0%, #01579B 100%);
+}
+
 /* Responsive */
 @media (max-width: 992px) {
     .hero h1 {
@@ -1035,29 +1086,4 @@ footer {
         flex-direction: column;
         align-items: center;
     }
-}
-
-/* Thèmes saisonniers */
-.christmas-theme {
-    --primary: #D32F2F;
-    --primary-light: #F44336;
-    --primary-dark: #B71C1C;
-}
-
-.black-friday-theme {
-    --primary: #000000;
-    --primary-light: #333333;
-    --primary-dark: #000000;
-}
-
-.summer-theme {
-    --primary: #FF9800;
-    --primary-light: #FFB74D;
-    --primary-dark: #F57C00;
-}
-
-.new-year-theme {
-    --primary: #9C27B0;
-    --primary-light: #BA68C8;
-    --primary-dark: #7B1FA2;
 }
