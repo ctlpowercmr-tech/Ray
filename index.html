@@ -7,7 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230096D6'/><circle cx='50' cy='50' r='30' fill='white'/><path d='M40 40L60 50L40 60Z' fill='%230096D6'/></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Header -->
@@ -15,7 +15,7 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <img id="site-logo" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230096D6'/><circle cx='50' cy='50' r='30' fill='white'/><path d='M40 40L60 50L40 60Z' fill='%230096D6'/></svg>" alt="Rayz.com Logo">
+                    <img id="site-logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iNSIgZmlsbD0iIzAwOTZENiIvPgo8Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxMCIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTE0IDE0TDI2IDIwTDE0IDI2VjE0WiIgZmlsbD0iIzAwOTZENiIvPgo8L3N2Zz4K" alt="Rayz.com Logo">
                     <h1 id="site-name">Rayz.com</h1>
                 </div>
                 <div class="mobile-toggle" id="mobile-toggle">
@@ -28,25 +28,27 @@
                         <li><a href="#projects">Projets</a></li>
                         <li><a href="#about">À propos</a></li>
                         <li><a href="#contact">Contact</a></li>
-                        <li><a href="admin.html" class="admin-link">Admin</a></li>
+                        <li><a href="admin.html" class="admin-link"><i class="fas fa-cog"></i> Admin</a></li>
                     </ul>
                 </nav>
             </div>
         </div>
     </header>
 
-    <!-- Promotion Banner -->
-    <div id="promotion-banner" class="promotion-banner" style="display: none;">
+    <!-- Bannière de promotion -->
+    <div id="promo-banner" class="promo-banner" style="display: none;">
         <div class="container">
-            <span id="promotion-text"></span>
-            <button id="close-promotion" class="close-promotion">&times;</button>
+            <div class="promo-content">
+                <span id="promo-text" class="promo-text"></span>
+                <button id="close-promo" class="close-promo">&times;</button>
+            </div>
         </div>
     </div>
 
     <!-- Hero Section avec Carousel -->
     <section class="hero" id="home">
         <div class="hero-carousel" id="hero-carousel">
-            <!-- Les slides seront chargées dynamiquement -->
+            <!-- Les slides seront chargés dynamiquement -->
         </div>
     </section>
 
@@ -54,8 +56,8 @@
     <section class="section services" id="services">
         <div class="container">
             <div class="section-header">
-                <h2 id="services-title">Nos Services</h2>
-                <p id="services-subtitle">Découvrez notre gamme complète de services de sécurité et de connectivité</p>
+                <h2>Nos Services</h2>
+                <p>Découvrez notre gamme complète de services de sécurité et de connectivité</p>
             </div>
             <div class="services-grid" id="services-grid">
                 <!-- Les services seront chargés dynamiquement -->
@@ -67,11 +69,15 @@
     <section class="section projects" id="projects">
         <div class="container">
             <div class="section-header">
-                <h2 id="projects-title">Nos Projets</h2>
-                <p id="projects-subtitle">Découvrez nos réalisations récentes en matière de sécurité et de connectivité</p>
+                <h2>Nos Projets</h2>
+                <p>Découvrez nos réalisations récentes en matière de sécurité et de connectivité</p>
             </div>
-            <div class="projects-filter" id="projects-filter">
-                <!-- Les filtres seront chargés dynamiquement -->
+            <div class="projects-filter">
+                <button class="filter-btn active" data-filter="all">Tous</button>
+                <button class="filter-btn" data-filter="surveillance">Surveillance</button>
+                <button class="filter-btn" data-filter="starlink">Starlink</button>
+                <button class="filter-btn" data-filter="alarmes">Alarmes</button>
+                <button class="filter-btn" data-filter="controle">Contrôle d'accès</button>
             </div>
             <div class="projects-grid" id="projects-grid">
                 <!-- Les projets seront chargés dynamiquement -->
@@ -85,14 +91,25 @@
             <div class="about-content">
                 <div class="about-text">
                     <h2 id="about-title">À Propos de Rayz.com</h2>
-                    <p id="about-text-1">Fondée en 2018, Rayz.com est devenue un leader dans le domaine des solutions de sécurité et de connectivité innovantes.</p>
-                    <p id="about-text-2">Nous nous spécialisons dans l'installation de systèmes de vidéosurveillance modernes, de solutions Starlink, de systèmes d'alarme et de contrôle d'accès.</p>
-                    <div class="about-stats" id="about-stats">
-                        <!-- Les statistiques seront chargées dynamiquement -->
+                    <p id="about-text-1">Fondée en 2018, Rayz.com est devenue un leader dans le domaine des solutions de sécurité et de connectivité innovantes. Notre équipe d'experts est passionnée par la création d'environnements plus sûrs et mieux connectés.</p>
+                    <p id="about-text-2">Nous nous spécialisons dans l'installation de systèmes de vidéosurveillance modernes, de solutions Starlink, de systèmes d'alarme et de contrôle d'accès. Notre approche personnalisée garantit que chaque client reçoit la solution parfaitement adaptée à ses besoins.</p>
+                    <div class="about-stats">
+                        <div class="stat">
+                            <div class="stat-number" id="stat-1">500+</div>
+                            <div class="stat-text">Projets Réalisés</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="stat-2">98%</div>
+                            <div class="stat-text">Clients Satisfaits</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="stat-3">24/7</div>
+                            <div class="stat-text">Support Client</div>
+                        </div>
                     </div>
                 </div>
                 <div class="about-image">
-                    <img id="about-image" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='400' viewBox='0 0 500 400'><rect width='500' height='400' rx='15' fill='%23F8FAFC'/><rect x='20' y='20' width='460' height='360' rx='10' fill='%23E5E7EB'/><circle cx='250' cy='150' r='80' fill='%230096D6'/><path d='M210 150L250 110L290 150H210Z' fill='white'/><path d='M290 150L250 190L210 150H290Z' fill='white'/><rect x='150' y='240' width='200' height='100' rx='10' fill='%23E5E7EB'/><rect x='170' y='260' width='160' height='60' rx='5' fill='%23F4F6F8'/></svg>" alt="Équipe Rayz.com">
+                    <img id="about-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDUwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNDAwIiByeD0iMTUiIGZpbGw9IiNGRkZGRkYiLz4KPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iNDYwIiBoZWlnaHQ9IjM2MCIgcng9IjEwIiBmaWxsPSIjRjhGQUZDIi8+CjxjaXJjbGUgY3g9IjI1MCIgY3k9IjE1MCIgcj0iODAiIGZpbGw9IiMwMDk2RDYiLz4KPHBhdGggZD0iTTIxMCAxNTBMMjUwIDExMEwyOTAgMTUwSDIxMFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0yOTAgMTUwTDI1MCAxOTBMMjEwIDE1MEgyOTBaIiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSIxNTAiIHk9IjI0MCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIxMCIgZmlsbD0iI0U5RTdFRiIvPgo8cmVjdCB4PSIxNzAiIHk9IjI2MCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSI2MCIgcng9IjUiIGZpbGw9IiNGNEY2RjgiLz4KPC9zdmc+Cg==" alt="Équipe Rayz.com">
                 </div>
             </div>
         </div>
@@ -102,13 +119,13 @@
     <section class="section contact" id="contact">
         <div class="container">
             <div class="section-header">
-                <h2 id="contact-title">Contactez-Nous</h2>
-                <p id="contact-subtitle">Prêt à sécuriser votre espace? Contactez notre équipe pour une consultation gratuite</p>
+                <h2>Contactez-Nous</h2>
+                <p>Prêt à sécuriser votre espace? Contactez notre équipe pour une consultation gratuite</p>
             </div>
             <div class="contact-content">
                 <div class="contact-info">
-                    <h3 id="contact-info-title">Discutons de votre projet</h3>
-                    <p id="contact-info-text">Notre équipe d'experts est disponible pour répondre à toutes vos questions et vous accompagner dans la réalisation de votre projet de sécurité.</p>
+                    <h3>Discutons de votre projet</h3>
+                    <p>Notre équipe d'experts est disponible pour répondre à toutes vos questions et vous accompagner dans la réalisation de votre projet de sécurité.</p>
                     <div class="contact-details">
                         <div class="contact-item">
                             <div class="contact-icon">
@@ -160,6 +177,11 @@
                             <label for="service">Service intéressé</label>
                             <select id="service" class="form-control">
                                 <option value="">Sélectionnez un service</option>
+                                <option value="surveillance">Surveillance vidéo</option>
+                                <option value="starlink">Installation Starlink</option>
+                                <option value="alarmes">Systèmes d'alarme</option>
+                                <option value="controle">Contrôle d'accès</option>
+                                <option value="autres">Autres</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -177,11 +199,41 @@
     <!-- Footer -->
     <footer>
         <div class="container">
-            <div class="footer-content" id="footer-content">
-                <!-- Le contenu du footer sera chargé dynamiquement -->
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4 id="footer-title">Rayz.com</h4>
+                    <p id="footer-description">Votre partenaire de confiance pour des solutions de sécurité innovantes et performantes.</p>
+                    <div class="social-links" id="footer-social-links">
+                        <!-- Les liens sociaux seront chargés dynamiquement -->
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Liens rapides</h4>
+                    <ul class="footer-links">
+                        <li><a href="#home">Accueil</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#projects">Projets</a></li>
+                        <li><a href="#about">À propos</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Services</h4>
+                    <ul class="footer-links" id="footer-services">
+                        <!-- Les services seront chargés dynamiquement -->
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-map-marker-alt"></i> <span id="footer-address">123 Avenue de la Sécurité, Paris</span></li>
+                        <li><i class="fas fa-phone"></i> <span id="footer-phone">+33 1 23 45 67 89</span></li>
+                        <li><i class="fas fa-envelope"></i> <span id="footer-email">contact@rayz.com</span></li>
+                    </ul>
+                </div>
             </div>
             <div class="copyright">
-                <p id="copyright-text">&copy; 2023 Rayz.com. Tous droits réservés.</p>
+                <p>&copy; 2023 <span id="copyright-name">Rayz.com</span>. Tous droits réservés.</p>
             </div>
         </div>
     </footer>
@@ -196,22 +248,39 @@
             <div class="modal-body">
                 <div class="project-carousel">
                     <div class="project-carousel-slide active">
-                        <img id="modal-image" src="" alt="Projet détaillé">
-                        <div class="project-carousel-caption" id="modal-caption">Image 1: Vue d'ensemble du système installé</div>
+                        <img id="modal-image-1" src="" alt="Projet détaillé">
+                        <div class="project-carousel-caption" id="modal-caption-1">Image 1: Vue d'ensemble du système installé</div>
+                    </div>
+                    <div class="project-carousel-slide">
+                        <img id="modal-image-2" src="" alt="Projet détaillé 2">
+                        <div class="project-carousel-caption" id="modal-caption-2">Image 2: Détails techniques de l'installation</div>
+                    </div>
+                    <div class="project-carousel-slide">
+                        <img id="modal-image-3" src="" alt="Projet détaillé 3">
+                        <div class="project-carousel-caption" id="modal-caption-3">Image 3: Interface de contrôle du système</div>
                     </div>
                     <div class="project-carousel-nav">
                         <div class="project-carousel-dot active" data-slide="0"></div>
+                        <div class="project-carousel-dot" data-slide="1"></div>
+                        <div class="project-carousel-dot" data-slide="2"></div>
                     </div>
                 </div>
                 <div class="project-details">
                     <h3 id="projectDetailTitle">Surveillance Résidentielle Premium</h3>
-                    <p id="projectDetailDescription">Installation complète d'un système de surveillance 4K avec détection intelligente pour une villa de luxe.</p>
+                    <p id="projectDetailDescription">Installation complète d'un système de surveillance 4K avec détection intelligente pour une villa de luxe. Ce projet incluait 12 caméras haute définition, un système d'enregistrement centralisé et une application mobile pour le contrôle à distance.</p>
+                    <p id="projectDetailAdditional">Le client souhaitait une solution discrète mais efficace pour sécuriser sa propriété de 500m². Nous avons installé des caméras avec vision nocturne, détection de mouvement et alertes en temps réel.</p>
+                    <p><strong>Technologies utilisées:</strong> <span id="projectTechnologies">Caméras 4K IP, NVR 16 canaux, Détection intelligente, Application mobile dédiée</span></p>
+                    <p><strong>Durée du projet:</strong> <span id="projectDuration">3 semaines</span></p>
+                    <p><strong>Résultat:</strong> <span id="projectResult">Système entièrement fonctionnel avec formation complète du client</span></p>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <script src="supabase.js"></script>
+    <script src="email.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
