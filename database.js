@@ -1,7 +1,7 @@
 // Configuration de la base de données PostgreSQL (Supabase)
 const DB_CONFIG = {
-    supabaseUrl: 'https://your-project.supabase.co',
-    supabaseKey: 'your-anon-key',
+    supabaseUrl: 'https://kbttmzacnzcbgucbdtgu.supabase.co',
+    supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtidHRtemFjbnpjYmd1Y2JkdGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2MzM2MTUsImV4cCI6MjA3OTIwOTYxNX0.Xh2sMIF5aQMBpr6Go88W3Arz1uK5a0clunrCl7AdpUc',
     // Fallback vers localStorage si Supabase n'est pas configuré
     useLocalStorage: true
 };
