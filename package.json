@@ -1,15 +1,22 @@
 {
   "name": "rayz-website",
   "version": "1.0.0",
+  "description": "Site web vitrine moderne pour Rayz.com",
+  "main": "index.html",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "python -m http.server 3000",
+    "build": "echo 'No build process needed for static site'",
+    "deploy": "vercel --prod"
   },
-  "dependencies": {
-    "vite": "^4.4.0"
-  },
+  "keywords": [
+    "security",
+    "surveillance",
+    "starlink",
+    "website"
+  ],
+  "author": "Rayz.com",
+  "license": "MIT",
   "devDependencies": {
-    "@types/node": "^18.0.0"
+    "vercel": "^28.0.0"
   }
 }
