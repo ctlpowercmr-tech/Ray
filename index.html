@@ -3,284 +3,2950 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rayz.com - Solutions de Sécurité Innovantes</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230096D6'/><circle cx='50' cy='50' r='30' fill='white'/><path d='M40 40L60 50L40 60Z' fill='%230096D6'/></svg>">
+    <title>Ray-z - Système de Gestion</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Include Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Variables CSS */
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+            --radius: 10px;
+            --radius-sm: 6px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: var(--transition);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--light-gray);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Login Page */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            top: -150px;
+            right: -150px;
+        }
+
+        .login-container::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            bottom: -100px;
+            left: -100px;
+        }
+
+        .login-box {
+            background-color: white;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 450px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo h2 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-logo p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: var(--light);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .btn-lg {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+        }
+
+        /* Main App Styles */
+        #appContainer {
+            display: none;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: white;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Sidebar */
+        .app-container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: white;
+            padding: 1.5rem 0;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            overflow-y: auto;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 1.5rem;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: var(--dark);
+            text-decoration: none;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+            font-weight: 500;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: var(--light);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .sidebar-menu i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background-color: #f5f7fb;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title h2 {
+            font-size: 1.8rem;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .page-title p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        /* Stats Cards */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: var(--transition);
+            border-top: 4px solid var(--primary);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .stat-info h3 {
+            font-size: 1.8rem;
+            color: var(--dark);
+            line-height: 1;
+        }
+
+        .stat-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 1.4rem;
+            margin: 2rem 0 1.5rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        /* Task Cards */
+        .tasks-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .task-card {
+            background-color: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border-top: 4px solid;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .task-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            flex: 1;
+        }
+
+        .task-priority {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .priority-high {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--warning);
+            border-left-color: var(--warning);
+        }
+
+        .priority-medium {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            border-left-color: #ffc107;
+        }
+
+        .priority-low {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success);
+            border-left-color: var(--success);
+        }
+
+        .task-details {
+            margin-bottom: 1.5rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--light-gray);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Technicians Grid */
+        .technicians-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .technician-card {
+            background-color: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: var(--transition);
+        }
+
+        .technician-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .technician-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 3px solid var(--primary);
+        }
+
+        .technician-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .technician-info {
+            flex: 1;
+        }
+
+        .technician-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+
+        .technician-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .technician-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-pending {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .status-in-progress {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
+
+        .status-completed {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        .status-cancelled {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: var(--gray);
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-20px);
+            transition: var(--transition);
+        }
+
+        .modal-lg {
+            max-width: 900px;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            background-color: var(--light-gray);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Form Styles */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-group .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .form-group textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* File Upload */
+        .file-upload {
+            border: 2px dashed var(--light-gray);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+
+        .file-upload i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .file-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .file-preview-item {
+            width: 100px;
+            height: 100px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .file-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Table Styles */
+        .table-container {
+            background-color: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: var(--light);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background-color: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar-menu span {
+                display: none;
+            }
+            
+            .sidebar-menu a {
+                justify-content: center;
+                padding: 15px;
+            }
+            
+            .sidebar-menu i {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 0;
+                height: auto;
+            }
+            
+            .sidebar-menu {
+                display: flex;
+                margin-top: 0;
+                padding: 0;
+            }
+            
+            .sidebar-menu li {
+                margin-bottom: 0;
+            }
+            
+            .sidebar-menu a {
+                border-left: none;
+                border-bottom: 3px solid transparent;
+                white-space: nowrap;
+                padding: 15px 20px;
+            }
+            
+            .sidebar-menu a:hover,
+            .sidebar-menu a.active {
+                border-left: none;
+                border-bottom-color: var(--primary);
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .user-info {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .stats-cards,
+            .tasks-container,
+            .technicians-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .modal {
+                width: 95%;
+                margin: 10px;
+            }
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            background-color: white;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 3000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification i {
+            font-size: 1.2rem;
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .notification.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--light-gray);
+        }
+    </style>
 </head>
 <body>
-    <!-- Header -->
-    <header id="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <img id="site-logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iNSIgZmlsbD0iIzAwOTZENiIvPgo8Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxMCIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTE0IDE0TDI2IDIwTDE0IDI2VjE0WiIgZmlsbD0iIzAwOTZENiIvPgo8L3N2Zz4K" alt="Rayz.com Logo">
-                    <h1 id="site-name">Rayz.com</h1>
-                </div>
-                <div class="mobile-toggle" id="mobile-toggle">
-                    <i class="fas fa-bars"></i>
-                </div>
-                <nav id="nav">
-                    <ul>
-                        <li><a href="#home">Accueil</a></li>
-                        <li><a href="#services">Services</a></li>
-                        <li><a href="#projects">Projets</a></li>
-                        <li><a href="#about">À propos</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                        <li><a href="admin.html" class="admin-link"><i class="fas fa-cog"></i> Admin</a></li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </header>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Chargement...</p>
+    </div>
 
-    <!-- Bannière de promotion -->
-    <div id="promo-banner" class="promo-banner" style="display: none;">
-        <div class="container">
-            <div class="promo-content">
-                <span id="promo-text" class="promo-text"></span>
-                <button id="close-promo" class="close-promo">&times;</button>
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <div class="login-logo">
+                <h2><i class="fas fa-calendar-check"></i> Ray-z</h2>
+                <p>Système de Gestion des Tâches et Rendez-vous</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-control" placeholder="votre@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" class="form-control" placeholder="Votre mot de passe" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-sign-in-alt"></i> Se connecter
+                </button>
+            </form>
+            <div style="margin-top: 1.5rem; text-align: center; color: var(--gray); font-size: 0.85rem;">
+                <p>Contactez l'administrateur pour créer un compte</p>
             </div>
         </div>
     </div>
 
-    <!-- Hero Section avec Carousel -->
-    <section class="hero" id="home">
-        <div class="hero-carousel" id="hero-carousel">
-            <!-- Les slides seront chargés dynamiquement -->
-        </div>
-    </section>
-
-    <!-- Services Section -->
-    <section class="section services" id="services">
-        <div class="container">
-            <div class="section-header">
-                <h2>Nos Services</h2>
-                <p>Découvrez notre gamme complète de services de sécurité et de connectivité</p>
-            </div>
-            <div class="services-grid" id="services-grid">
-                <!-- Les services seront chargés dynamiquement -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Projects Section -->
-    <section class="section projects" id="projects">
-        <div class="container">
-            <div class="section-header">
-                <h2>Nos Projets</h2>
-                <p>Découvrez nos réalisations récentes en matière de sécurité et de connectivité</p>
-            </div>
-            <div class="projects-filter">
-                <button class="filter-btn active" data-filter="all">Tous</button>
-                <button class="filter-btn" data-filter="surveillance">Surveillance</button>
-                <button class="filter-btn" data-filter="starlink">Starlink</button>
-                <button class="filter-btn" data-filter="alarmes">Alarmes</button>
-                <button class="filter-btn" data-filter="controle">Contrôle d'accès</button>
-            </div>
-            <div class="projects-grid" id="projects-grid">
-                <!-- Les projets seront chargés dynamiquement -->
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section class="section about" id="about">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2 id="about-title">À Propos de Rayz.com</h2>
-                    <p id="about-text-1">Fondée en 2018, Rayz.com est devenue un leader dans le domaine des solutions de sécurité et de connectivité innovantes. Notre équipe d'experts est passionnée par la création d'environnements plus sûrs et mieux connectés.</p>
-                    <p id="about-text-2">Nous nous spécialisons dans l'installation de systèmes de vidéosurveillance modernes, de solutions Starlink, de systèmes d'alarme et de contrôle d'accès. Notre approche personnalisée garantit que chaque client reçoit la solution parfaitement adaptée à ses besoins.</p>
-                    <div class="about-stats">
-                        <div class="stat">
-                            <div class="stat-number" id="stat-1">500+</div>
-                            <div class="stat-text">Projets Réalisés</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-number" id="stat-2">98%</div>
-                            <div class="stat-text">Clients Satisfaits</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-number" id="stat-3">24/7</div>
-                            <div class="stat-text">Support Client</div>
-                        </div>
-                    </div>
+    <!-- Main App Container -->
+    <div id="appContainer">
+        <header>
+            <div class="container header-content">
+                <div class="logo">
+                    <i class="fas fa-calendar-check"></i>
+                    <h1>Ray-z | Système de Gestion</h1>
                 </div>
-                <div class="about-image">
-                    <img id="about-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDUwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNDAwIiByeD0iMTUiIGZpbGw9IiNGRkZGRkYiLz4KPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iNDYwIiBoZWlnaHQ9IjM2MCIgcng9IjEwIiBmaWxsPSIjRjhGQUZDIi8+CjxjaXJjbGUgY3g9IjI1MCIgY3k9IjE1MCIgcj0iODAiIGZpbGw9IiMwMDk2RDYiLz4KPHBhdGggZD0iTTIxMCAxNTBMMjUwIDExMEwyOTAgMTUwSDIxMFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0yOTAgMTUwTDI1MCAxOTBMMjEwIDE1MEgyOTBaIiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSIxNTAiIHk9IjI0MCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIxMCIgZmlsbD0iI0U5RTdFRiIvPgo8cmVjdCB4PSIxNzAiIHk9IjI2MCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSI2MCIgcng9IjUiIGZpbGw9IiNGNEY2RjgiLz4KPC9zdmc+Cg==" alt="Équipe Rayz.com">
+                <div class="user-info">
+                    <div style="text-align: right;">
+                        <span id="currentUserName">Utilisateur</span>
+                        <span id="currentUserRole" style="font-size: 0.85rem; display: block; opacity: 0.8;">Rôle</span>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">
+                        <!-- Avatar will be loaded dynamically -->
+                    </div>
+                    <button id="logoutBtn" class="btn btn-outline btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
                 </div>
             </div>
-        </div>
-    </section>
+        </header>
 
-    <!-- Contact Section -->
-    <section class="section contact" id="contact">
-        <div class="container">
-            <div class="section-header">
-                <h2>Contactez-Nous</h2>
-                <p>Prêt à sécuriser votre espace? Contactez notre équipe pour une consultation gratuite</p>
-            </div>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <h3>Discutons de votre projet</h3>
-                    <p>Notre équipe d'experts est disponible pour répondre à toutes vos questions et vous accompagner dans la réalisation de votre projet de sécurité.</p>
-                    <div class="contact-details">
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-map-marker-alt"></i>
-                            </div>
-                            <div>
-                                <h4>Adresse</h4>
-                                <p id="contact-address">123 Avenue de la Sécurité, 75000 Paris</p>
-                            </div>
+        <div class="app-container">
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar">
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> <span>Tableau de bord</span></a></li>
+                    <li><a href="#" data-page="tasks"><i class="fas fa-tasks"></i> <span>Tâches</span></a></li>
+                    <li><a href="#" data-page="technicians"><i class="fas fa-users"></i> <span>Techniciens</span></a></li>
+                    <li><a href="#" data-page="calendar"><i class="fas fa-calendar-alt"></i> <span>Calendrier</span></a></li>
+                    <li><a href="#" data-page="planning"><i class="fas fa-clipboard-list"></i> <span>Planning</span></a></li>
+                    <li><a href="#" data-page="projects"><i class="fas fa-project-diagram"></i> <span>Projets</span></a></li>
+                    <li><a href="#" data-page="reports"><i class="fas fa-chart-bar"></i> <span>Rapports</span></a></li>
+                    <li id="adminSection" style="display: none;"><a href="#" data-page="admin"><i class="fas fa-cog"></i> <span>Administration</span></a></li>
+                </ul>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- Dashboard Page -->
+                <div id="dashboardPage" class="page-content">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h2>Tableau de bord</h2>
+                            <p id="dashboardDate">Chargement de la date...</p>
                         </div>
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-phone"></i>
-                            </div>
-                            <div>
-                                <h4>Téléphone</h4>
-                                <p id="contact-phone">+33 1 23 45 67 89</p>
-                            </div>
-                        </div>
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <div>
-                                <h4>Email</h4>
-                                <p id="contact-email">contact@rayz.com</p>
-                            </div>
+                        <div class="actions">
+                            <button id="quickTaskBtn" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Nouvelle tâche rapide
+                            </button>
                         </div>
                     </div>
-                    <div class="social-links" id="social-links">
-                        <!-- Les liens sociaux seront chargés dynamiquement -->
+
+                    <div class="stats-cards" id="dashboardStats">
+                        <!-- Stats will be loaded dynamically -->
+                    </div>
+
+                    <h3 class="section-title"><i class="fas fa-tasks"></i> Tâches récentes</h3>
+                    <div class="tasks-container" id="recentTasks">
+                        <!-- Recent tasks will be loaded here -->
+                    </div>
+
+                    <h3 class="section-title"><i class="fas fa-user-clock"></i> Techniciens actifs</h3>
+                    <div class="technicians-grid" id="activeTechnicians">
+                        <!-- Active technicians will be loaded here -->
                     </div>
                 </div>
-                <div class="contact-form">
-                    <form id="contactForm">
+
+                <!-- Tasks Management Page -->
+                <div id="tasksPage" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h2>Gestion des tâches</h2>
+                            <p>Créer, assigner et suivre les tâches</p>
+                        </div>
+                        <div class="actions">
+                            <button id="newTaskBtn" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Nouvelle tâche
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-bar">
+                        <div class="filter-group">
+                            <label>Statut</label>
+                            <select id="filterStatus" class="form-control">
+                                <option value="">Tous les statuts</option>
+                                <option value="en_attente">En attente</option>
+                                <option value="en_cours">En cours</option>
+                                <option value="terminee">Terminée</option>
+                                <option value="annulee">Annulée</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Priorité</label>
+                            <select id="filterPriority" class="form-control">
+                                <option value="">Toutes les priorités</option>
+                                <option value="haute">Haute</option>
+                                <option value="moyenne">Moyenne</option>
+                                <option value="basse">Basse</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Technicien</label>
+                            <select id="filterTechnician" class="form-control">
+                                <option value="">Tous les techniciens</option>
+                                <!-- Technicians will be loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Date</label>
+                            <input type="date" id="filterDate" class="form-control">
+                        </div>
+                        <div>
+                            <button id="applyFilters" class="btn btn-primary">Appliquer</button>
+                            <button id="resetFilters" class="btn btn-outline">Réinitialiser</button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="tasksTable">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Technicien</th>
+                                    <th>Priorité</th>
+                                    <th>Statut</th>
+                                    <th>Date début</th>
+                                    <th>Date fin</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tasksTableBody">
+                                <!-- Tasks will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Technicians Management Page -->
+                <div id="techniciansPage" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h2>Gestion des techniciens</h2>
+                            <p>Gérer les profils et les performances des techniciens</p>
+                        </div>
+                        <div class="actions">
+                            <button id="addTechnicianBtn" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Ajouter un technicien
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="technicians-grid" id="techniciansList">
+                        <!-- Technicians will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Calendar Page -->
+                <div id="calendarPage" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h2>Calendrier des tâches</h2>
+                            <p>Visualisation et planification des tâches</p>
+                        </div>
+                        <div class="actions">
+                            <button id="prevMonth" class="btn btn-outline btn-sm">
+                                <i class="fas fa-chevron-left"></i> Mois précédent
+                            </button>
+                            <button id="todayBtn" class="btn btn-outline btn-sm">Aujourd'hui</button>
+                            <button id="nextMonth" class="btn btn-outline btn-sm">
+                                Mois suivant <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="calendarContainer" class="table-container">
+                        <!-- Calendar will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Planning Page -->
+                <div id="planningPage" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h2>Planning hebdomadaire</h2>
+                            <p>Organisation des tâches par technicien</p>
+                        </div>
+                        <div class="actions">
+                            <button id="generatePlanningBtn" class="btn btn-success">
+                                <i class="fas fa-calendar-plus"></i> Générer planning
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="weeklyPlanningContainer">
+                        <!-- Weekly planning will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Admin Page -->
+                <div id="adminPage" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h2>Administration</h2>
+                            <p>Gestion des comptes et paramètres système</p>
+                        </div>
+                    </div>
+
+                    <div class="stats-cards">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background-color: var(--primary);">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalUsers">0</h3>
+                                <p>Utilisateurs totaux</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background-color: var(--success);">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="activeUsers">0</h3>
+                                <p>Utilisateurs actifs</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title"><i class="fas fa-users"></i> Gestion des utilisateurs</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Rôle</th>
+                                    <th>Statut</th>
+                                    <th>Tâches terminées</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Users will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Task Modal -->
+    <div id="taskModal" class="modal-overlay">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3>Nouvelle tâche</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="taskForm">
+                <div class="modal-body">
+                    <div class="form-row">
                         <div class="form-group">
-                            <label for="name">Nom complet</label>
-                            <input type="text" id="name" class="form-control" required>
+                            <label for="taskTitle">Titre de la tâche *</label>
+                            <input type="text" id="taskTitle" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="email">Adresse email</label>
-                            <input type="email" id="email" class="form-control" required>
+                            <label for="taskPriority">Priorité *</label>
+                            <select id="taskPriority" class="form-control" required>
+                                <option value="basse">Basse</option>
+                                <option value="moyenne" selected>Moyenne</option>
+                                <option value="haute">Haute</option>
+                                <option value="urgente">Urgente</option>
+                            </select>
                         </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskDescription">Description détaillée</label>
+                        <textarea id="taskDescription" class="form-control" rows="4"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
                         <div class="form-group">
-                            <label for="phone">Téléphone</label>
-                            <input type="tel" id="phone" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label for="service">Service intéressé</label>
-                            <select id="service" class="form-control">
-                                <option value="">Sélectionnez un service</option>
-                                <option value="surveillance">Surveillance vidéo</option>
-                                <option value="starlink">Installation Starlink</option>
-                                <option value="alarmes">Systèmes d'alarme</option>
-                                <option value="controle">Contrôle d'accès</option>
-                                <option value="autres">Autres</option>
+                            <label for="taskTechnician">Assigner à *</label>
+                            <select id="taskTechnician" class="form-control" required>
+                                <!-- Technicians will be loaded dynamically -->
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="message">Message</label>
-                            <textarea id="message" class="form-control" required></textarea>
+                            <label for="taskChefProjet">Chef de projet</label>
+                            <select id="taskChefProjet" class="form-control">
+                                <!-- Chefs de projet will be loaded dynamically -->
+                            </select>
                         </div>
-                        <button type="submit" class="btn btn-primary">Envoyer le message</button>
-                        <a href="https://shop.thetic.de" target="_blank" class="btn btn-shop" style="margin-top: 20px; display: inline-block; width: 100%; text-align: center;"><i class="fas fa-shopping-cart"></i> Visiter notre boutique</a>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-col">
-                    <h4 id="footer-title">Rayz.com</h4>
-                    <p id="footer-description">Votre partenaire de confiance pour des solutions de sécurité innovantes et performantes.</p>
-                    <div class="social-links" id="footer-social-links">
-                        <!-- Les liens sociaux seront chargés dynamiquement -->
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskDateDebut">Date de début *</label>
+                            <input type="datetime-local" id="taskDateDebut" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskDateFin">Date de fin prévue *</label>
+                            <input type="datetime-local" id="taskDateFin" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskBesoinPV">Besoin de PV</label>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                            <input type="checkbox" id="taskBesoinPV" style="width: auto;">
+                            <label for="taskBesoinPV" style="margin: 0; font-weight: normal;">
+                                Exiger une preuve de travail (image) pour valider la tâche
+                            </label>
+                        </div>
                     </div>
                 </div>
-                <div class="footer-col">
-                    <h4>Liens rapides</h4>
-                    <ul class="footer-links">
-                        <li><a href="#home">Accueil</a></li>
-                        <li><a href="#services">Services</a></li>
-                        <li><a href="#projects">Projets</a></li>
-                        <li><a href="#about">À propos</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline close-modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer la tâche</button>
                 </div>
-                <div class="footer-col">
-                    <h4>Services</h4>
-                    <ul class="footer-links" id="footer-services">
-                        <!-- Les services seront chargés dynamiquement -->
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Contact</h4>
-                    <ul class="footer-links">
-                        <li><i class="fas fa-map-marker-alt"></i> <span id="footer-address">123 Avenue de la Sécurité, Paris</span></li>
-                        <li><i class="fas fa-phone"></i> <span id="footer-phone">+33 1 23 45 67 89</span></li>
-                        <li><i class="fas fa-envelope"></i> <span id="footer-email">contact@rayz.com</span></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="copyright">
-                <p>&copy; 2023 <span id="copyright-name">Rayz.com</span>. Tous droits réservés.</p>
-            </div>
+            </form>
         </div>
-    </footer>
+    </div>
 
-    <!-- Modal pour les projets -->
-    <div class="modal" id="projectModal">
-        <div class="modal-content">
+    <!-- Technician Modal -->
+    <div id="technicianModal" class="modal-overlay">
+        <div class="modal modal-lg">
             <div class="modal-header">
-                <h3 id="modalTitle">Détails du projet</h3>
-                <button class="modal-close" id="modalClose">&times;</button>
+                <h3>Nouveau technicien</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="technicianForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="techNom">Nom complet *</label>
+                            <input type="text" id="techNom" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="techEmail">Email *</label>
+                            <input type="email" id="techEmail" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="techTelephone">Téléphone *</label>
+                            <input type="tel" id="techTelephone" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="techRole">Rôle *</label>
+                            <select id="techRole" class="form-control" required>
+                                <option value="technicien">Technicien</option>
+                                <option value="chef_projet">Chef de projet</option>
+                                <option value="secretaire">Secrétaire</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="techAdresse">Adresse</label>
+                        <textarea id="techAdresse" class="form-control" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="techDateEmbauche">Date d'embauche</label>
+                            <input type="date" id="techDateEmbauche" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="techStatut">Statut</label>
+                            <select id="techStatut" class="form-control">
+                                <option value="actif">Actif</option>
+                                <option value="inactif">Inactif</option>
+                                <option value="en_conge">En congé</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Photo de profil</label>
+                        <div class="file-upload" id="photoUpload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Glissez-déposez une photo ou cliquez pour sélectionner</p>
+                            <input type="file" id="techPhoto" accept="image/*" style="display: none;">
+                        </div>
+                        <div class="file-preview" id="photoPreview"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline close-modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Task Details Modal -->
+    <div id="taskDetailsModal" class="modal-overlay">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3>Détails de la tâche</h3>
+                <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="project-carousel">
-                    <div class="project-carousel-slide active">
-                        <img id="modal-image-1" src="" alt="Projet détaillé">
-                        <div class="project-carousel-caption" id="modal-caption-1">Image 1: Vue d'ensemble du système installé</div>
-                    </div>
-                    <div class="project-carousel-slide">
-                        <img id="modal-image-2" src="" alt="Projet détaillé 2">
-                        <div class="project-carousel-caption" id="modal-caption-2">Image 2: Détails techniques de l'installation</div>
-                    </div>
-                    <div class="project-carousel-slide">
-                        <img id="modal-image-3" src="" alt="Projet détaillé 3">
-                        <div class="project-carousel-caption" id="modal-caption-3">Image 3: Interface de contrôle du système</div>
-                    </div>
-                    <div class="project-carousel-nav">
-                        <div class="project-carousel-dot active" data-slide="0"></div>
-                        <div class="project-carousel-dot" data-slide="1"></div>
-                        <div class="project-carousel-dot" data-slide="2"></div>
-                    </div>
+                <div id="taskDetailsContent">
+                    <!-- Task details will be loaded here -->
                 </div>
-                <div class="project-details">
-                    <h3 id="projectDetailTitle">Surveillance Résidentielle Premium</h3>
-                    <p id="projectDetailDescription">Installation complète d'un système de surveillance 4K avec détection intelligente pour une villa de luxe. Ce projet incluait 12 caméras haute définition, un système d'enregistrement centralisé et une application mobile pour le contrôle à distance.</p>
-                    <p id="projectDetailAdditional">Le client souhaitait une solution discrète mais efficace pour sécuriser sa propriété de 500m². Nous avons installé des caméras avec vision nocturne, détection de mouvement et alertes en temps réel.</p>
-                    <p><strong>Technologies utilisées:</strong> <span id="projectTechnologies">Caméras 4K IP, NVR 16 canaux, Détection intelligente, Application mobile dédiée</span></p>
-                    <p><strong>Durée du projet:</strong> <span id="projectDuration">3 semaines</span></p>
-                    <p><strong>Résultat:</strong> <span id="projectResult">Système entièrement fonctionnel avec formation complète du client</span></p>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline close-modal">Fermer</button>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-    <script src="supabase.js"></script>
-    <script src="email.js"></script>
-    <script src="script.js"></script>
+    <!-- PV Upload Modal -->
+    <div id="pvModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Soumettre une preuve de travail</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="pvForm">
+                <div class="modal-body">
+                    <input type="hidden" id="pvTaskId">
+                    <div class="form-group">
+                        <label>Image du PV *</label>
+                        <div class="file-upload" id="pvUpload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Glissez-déposez l'image ou cliquez pour sélectionner</p>
+                            <input type="file" id="pvImage" accept="image/*" style="display: none;" required>
+                        </div>
+                        <div class="file-preview" id="pvPreview"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pvDescription">Description (optionnel)</label>
+                        <textarea id="pvDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="pvProbleme">Problèmes rencontrés (optionnel)</label>
+                        <textarea id="pvProbleme" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline close-modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Soumettre le PV</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Message Modal -->
+    <div id="messageModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Envoyer un message</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="messageForm">
+                <div class="modal-body">
+                    <input type="hidden" id="messageTaskId">
+                    <div class="form-group">
+                        <label for="messageContent">Message *</label>
+                        <textarea id="messageContent" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline close-modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Envoyer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Configuration Supabase
+        const SUPABASE_URL = 'https://qfpcdsyfchzmqhsctnnv.supabase.co'; // Remplacez par votre URL Supabase
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmcGNkc3lmY2h6bXFoc2N0bm52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyMzY4NDgsImV4cCI6MjA4MDgxMjg0OH0.yzwfLx_OIjwdV3t_1ZcMjaddIxrZ9f1l9MztxHWNHCc'; // Remplacez par votre clé anonyme
+        
+        // Initialisation Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // État de l'application
+        const appState = {
+            currentUser: null,
+            currentPage: 'dashboard',
+            technicians: [],
+            tasks: [],
+            users: [],
+            filters: {
+                status: '',
+                priority: '',
+                technician: '',
+                date: ''
+            }
+        };
+        
+        // Initialisation de l'application
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+        });
+        
+        async function initApp() {
+            // Vérifier si l'utilisateur est déjà connecté
+            const token = localStorage.getItem('rayz_token');
+            if (token) {
+                try {
+                    // Vérifier la validité du token
+                    const { data, error } = await supabase
+                        .from('sessions')
+                        .select('*, utilisateur:utilisateurs(*)')
+                        .eq('token', token)
+                        .gt('expires_at', new Date().toISOString())
+                        .single();
+                    
+                    if (data && !error) {
+                        appState.currentUser = data.utilisateur;
+                        showApp();
+                        loadDashboard();
+                    } else {
+                        showLogin();
+                    }
+                } catch (error) {
+                    console.error('Erreur de vérification de session:', error);
+                    showLogin();
+                }
+            } else {
+                showLogin();
+            }
+            
+            // Initialiser les écouteurs d'événements
+            initEventListeners();
+        }
+        
+        function showLogin() {
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+            hideLoading();
+        }
+        
+        function showApp() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            updateUserInfo();
+            hideLoading();
+        }
+        
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+        
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'exclamation-triangle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    container.removeChild(notification);
+                }, 300);
+            }, 5000);
+        }
+        
+        function initEventListeners() {
+            // Formulaire de connexion
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Déconnexion
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            
+            // Navigation dans le sidebar
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.getAttribute('data-page');
+                    navigateTo(page);
+                });
+            });
+            
+            // Boutons de création
+            document.getElementById('newTaskBtn')?.addEventListener('click', () => openModal('taskModal'));
+            document.getElementById('addTechnicianBtn')?.addEventListener('click', () => openModal('technicianModal'));
+            document.getElementById('quickTaskBtn')?.addEventListener('click', () => openModal('taskModal'));
+            
+            // Fermeture des modals
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    closeAllModals();
+                });
+            });
+            
+            // Fermeture des modals en cliquant à l'extérieur
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeAllModals();
+                    }
+                });
+            });
+            
+            // Filtres
+            document.getElementById('applyFilters')?.addEventListener('click', applyFilters);
+            document.getElementById('resetFilters')?.addEventListener('click', resetFilters);
+            
+            // Formulaire de tâche
+            document.getElementById('taskForm')?.addEventListener('submit', handleTaskSubmit);
+            
+            // Formulaire de technicien
+            document.getElementById('technicianForm')?.addEventListener('submit', handleTechnicianSubmit);
+            
+            // Upload de photos
+            document.getElementById('photoUpload')?.addEventListener('click', () => {
+                document.getElementById('techPhoto').click();
+            });
+            
+            document.getElementById('techPhoto')?.addEventListener('change', handlePhotoUpload);
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            showLoading();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                // Dans une vraie application, utilisez Supabase Auth
+                // Pour cette démo, nous allons vérifier contre la table utilisateurs
+                const { data, error } = await supabase
+                    .from('utilisateurs')
+                    .select('*')
+                    .eq('email', email)
+                    .single();
+                
+                if (error || !data) {
+                    showNotification('Email ou mot de passe incorrect', 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                // Dans une vraie application, vérifiez le hash du mot de passe
+                // Pour cette démo, nous acceptons n'importe quel mot de passe
+                
+                // Créer une session
+                const token = generateToken();
+                const expiresAt = new Date();
+                expiresAt.setDate(expiresAt.getDate() + 7); // Expire dans 7 jours
+                
+                const { error: sessionError } = await supabase
+                    .from('sessions')
+                    .insert({
+                        utilisateur_id: data.id,
+                        token: token,
+                        expires_at: expiresAt.toISOString()
+                    });
+                
+                if (sessionError) {
+                    showNotification('Erreur de création de session', 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                // Stocker le token
+                localStorage.setItem('rayz_token', token);
+                
+                // Mettre à jour l'état
+                appState.currentUser = data;
+                
+                // Afficher l'application
+                showApp();
+                showNotification('Connexion réussie!', 'success');
+                
+            } catch (error) {
+                console.error('Erreur de connexion:', error);
+                showNotification('Erreur de connexion', 'error');
+                hideLoading();
+            }
+        }
+        
+        async function handleLogout() {
+            const token = localStorage.getItem('rayz_token');
+            
+            if (token) {
+                await supabase
+                    .from('sessions')
+                    .delete()
+                    .eq('token', token);
+            }
+            
+            localStorage.removeItem('rayz_token');
+            appState.currentUser = null;
+            showLogin();
+            showNotification('Déconnexion réussie', 'success');
+        }
+        
+        function generateToken() {
+            return 'token_' + Math.random().toString(36).substr(2) + Date.now().toString(36);
+        }
+        
+        function updateUserInfo() {
+            if (!appState.currentUser) return;
+            
+            const user = appState.currentUser;
+            document.getElementById('currentUserName').textContent = user.nom_complet;
+            document.getElementById('currentUserRole').textContent = 
+                user.role === 'boss' ? 'Administrateur' :
+                user.role === 'secretaire' ? 'Secrétaire' :
+                user.role === 'chef_projet' ? 'Chef de projet' : 'Technicien';
+            
+            const avatar = document.getElementById('userAvatar');
+            if (user.photo_url) {
+                avatar.innerHTML = `<img src="${user.photo_url}" alt="${user.nom_complet}">`;
+            } else {
+                avatar.textContent = user.nom_complet.charAt(0);
+            }
+            
+            // Afficher/masquer la section admin
+            const adminSection = document.getElementById('adminSection');
+            if (user.role === 'boss' || user.role === 'secretaire') {
+                adminSection.style.display = 'block';
+            } else {
+                adminSection.style.display = 'none';
+            }
+        }
+        
+        function navigateTo(page) {
+            // Mettre à jour le menu actif
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-page') === page) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Masquer toutes les pages
+            document.querySelectorAll('.page-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Afficher la page sélectionnée
+            const pageElement = document.getElementById(page + 'Page');
+            if (pageElement) {
+                pageElement.style.display = 'block';
+                appState.currentPage = page;
+                
+                // Charger les données de la page
+                switch(page) {
+                    case 'dashboard':
+                        loadDashboard();
+                        break;
+                    case 'tasks':
+                        loadTasks();
+                        break;
+                    case 'technicians':
+                        loadTechnicians();
+                        break;
+                    case 'admin':
+                        loadAdmin();
+                        break;
+                }
+            }
+        }
+        
+        async function loadDashboard() {
+            showLoading();
+            
+            try {
+                // Charger les statistiques
+                const stats = await getDashboardStats();
+                renderDashboardStats(stats);
+                
+                // Charger les tâches récentes
+                const tasks = await getRecentTasks();
+                renderRecentTasks(tasks);
+                
+                // Charger les techniciens actifs
+                const technicians = await getActiveTechnicians();
+                renderActiveTechnicians(technicians);
+                
+                // Mettre à jour la date
+                const now = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('dashboardDate').textContent = 
+                    `Aujourd'hui, ${now.toLocaleDateString('fr-FR', options)}`;
+                
+            } catch (error) {
+                console.error('Erreur de chargement du tableau de bord:', error);
+                showNotification('Erreur de chargement des données', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function getDashboardStats() {
+            // Récupérer les statistiques
+            const [
+                totalTasks,
+                pendingTasks,
+                activeTechnicians,
+                completedTasksToday
+            ] = await Promise.all([
+                supabase.from('taches').select('*', { count: 'exact' }),
+                supabase.from('taches').select('*', { count: 'exact' }).eq('statut', 'en_attente'),
+                supabase.from('utilisateurs').select('*', { count: 'exact' }).eq('role', 'technicien').eq('statut', 'actif'),
+                supabase.from('taches').select('*', { count: 'exact' }).eq('statut', 'terminee').gte('date_fin_reelle', new Date().toISOString().split('T')[0])
+            ]);
+            
+            return {
+                totalTasks: totalTasks.count || 0,
+                pendingTasks: pendingTasks.count || 0,
+                activeTechnicians: activeTechnicians.count || 0,
+                completedTasksToday: completedTasksToday.count || 0
+            };
+        }
+        
+        function renderDashboardStats(stats) {
+            const container = document.getElementById('dashboardStats');
+            container.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-icon" style="background-color: var(--primary);">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>${stats.totalTasks}</h3>
+                        <p>Tâches totales</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background-color: var(--warning);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>${stats.pendingTasks}</h3>
+                        <p>Tâches en attente</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background-color: var(--success);">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>${stats.activeTechnicians}</h3>
+                        <p>Techniciens actifs</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background-color: var(--secondary);">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>${stats.completedTasksToday}</h3>
+                        <p>Tâches terminées aujourd'hui</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function getRecentTasks() {
+            const { data, error } = await supabase
+                .from('taches')
+                .select('*, technicien:utilisateurs(nom_complet), chef_projet:utilisateurs!taches_chef_projet_id_fkey(nom_complet)')
+                .order('date_creation', { ascending: false })
+                .limit(6);
+            
+            return data || [];
+        }
+        
+        function renderRecentTasks(tasks) {
+            const container = document.getElementById('recentTasks');
+            
+            if (!tasks.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-tasks"></i>
+                        <p>Aucune tâche récente</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = tasks.map(task => `
+                <div class="task-card ${task.priorite === 'haute' || task.priorite === 'urgente' ? 'priority-high' : task.priorite === 'moyenne' ? 'priority-medium' : 'priority-low'}">
+                    <div class="task-header">
+                        <div class="task-title">${task.titre}</div>
+                        <div class="task-priority priority-${task.priorite}">
+                            ${task.priorite === 'haute' ? 'Haute' : task.priorite === 'urgente' ? 'Urgente' : task.priorite === 'moyenne' ? 'Moyenne' : 'Basse'}
+                        </div>
+                    </div>
+                    <div class="task-details">
+                        ${task.description || 'Aucune description'}
+                    </div>
+                    <div class="task-footer">
+                        <div>
+                            <span class="status-badge status-${task.statut}">
+                                ${task.statut === 'en_attente' ? 'En attente' : 
+                                  task.statut === 'en_cours' ? 'En cours' : 
+                                  task.statut === 'terminee' ? 'Terminée' : 'Annulée'}
+                            </span>
+                            <span style="margin-left: 10px; font-size: 0.85rem; color: var(--gray);">
+                                <i class="fas fa-user"></i> ${task.technicien?.nom_complet || 'Non assigné'}
+                            </span>
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn btn-outline btn-sm" onclick="viewTaskDetails('${task.id}')">
+                                <i class="fas fa-eye"></i> Voir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function getActiveTechnicians() {
+            const { data, error } = await supabase
+                .from('utilisateurs')
+                .select('*')
+                .eq('role', 'technicien')
+                .eq('statut', 'actif')
+                .order('nom_complet');
+            
+            return data || [];
+        }
+        
+        function renderActiveTechnicians(technicians) {
+            const container = document.getElementById('activeTechnicians');
+            
+            if (!technicians.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>Aucun technicien actif</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = technicians.map(tech => `
+                <div class="technician-card">
+                    <div class="technician-avatar">
+                        ${tech.photo_url ? 
+                            `<img src="${tech.photo_url}" alt="${tech.nom_complet}">` : 
+                            `<div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">${tech.nom_complet.charAt(0)}</div>`
+                        }
+                    </div>
+                    <div class="technician-info">
+                        <h4>${tech.nom_complet}</h4>
+                        <p><i class="fas fa-envelope"></i> ${tech.email}</p>
+                        <p><i class="fas fa-phone"></i> ${tech.telephone || 'Non spécifié'}</p>
+                        <div class="technician-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">${tech.taches_terminees || 0}</div>
+                                <div class="stat-label">Terminées</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${tech.taches_en_cours || 0}</div>
+                                <div class="stat-label">En cours</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${Math.floor(Math.random() * 50) + 80}%</div>
+                                <div class="stat-label">Efficacité</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function loadTasks() {
+            showLoading();
+            
+            try {
+                // Charger les techniciens pour le filtre
+                await loadTechniciansForFilter();
+                
+                // Charger les tâches
+                const tasks = await getFilteredTasks();
+                renderTasksTable(tasks);
+                
+            } catch (error) {
+                console.error('Erreur de chargement des tâches:', error);
+                showNotification('Erreur de chargement des tâches', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function loadTechniciansForFilter() {
+            const { data, error } = await supabase
+                .from('utilisateurs')
+                .select('id, nom_complet')
+                .eq('role', 'technicien')
+                .order('nom_complet');
+            
+            if (data) {
+                const select = document.getElementById('filterTechnician');
+                select.innerHTML = '<option value="">Tous les techniciens</option>' +
+                    data.map(tech => `<option value="${tech.id}">${tech.nom_complet}</option>`).join('');
+            }
+        }
+        
+        async function getFilteredTasks() {
+            let query = supabase
+                .from('taches')
+                .select('*, technicien:utilisateurs(nom_complet), chef_projet:utilisateurs!taches_chef_projet_id_fkey(nom_complet)')
+                .order('date_debut', { ascending: false });
+            
+            if (appState.filters.status) {
+                query = query.eq('statut', appState.filters.status);
+            }
+            
+            if (appState.filters.priority) {
+                query = query.eq('priorite', appState.filters.priority);
+            }
+            
+            if (appState.filters.technician) {
+                query = query.eq('technicien_id', appState.filters.technician);
+            }
+            
+            if (appState.filters.date) {
+                const date = new Date(appState.filters.date);
+                const nextDay = new Date(date);
+                nextDay.setDate(nextDay.getDate() + 1);
+                
+                query = query.gte('date_debut', date.toISOString())
+                           .lt('date_debut', nextDay.toISOString());
+            }
+            
+            const { data, error } = await query;
+            return data || [];
+        }
+        
+        function renderTasksTable(tasks) {
+            const tbody = document.getElementById('tasksTableBody');
+            
+            if (!tasks.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 3rem; color: var(--gray);">
+                            <i class="fas fa-tasks" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                            Aucune tâche trouvée
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = tasks.map(task => `
+                <tr>
+                    <td><strong>${task.titre}</strong></td>
+                    <td>${task.technicien?.nom_complet || 'Non assigné'}</td>
+                    <td>
+                        <span class="task-priority priority-${task.priorite}">
+                            ${task.priorite === 'haute' ? 'Haute' : task.priorite === 'urgente' ? 'Urgente' : task.priorite === 'moyenne' ? 'Moyenne' : 'Basse'}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-${task.statut}">
+                            ${task.statut === 'en_attente' ? 'En attente' : 
+                              task.statut === 'en_cours' ? 'En cours' : 
+                              task.statut === 'terminee' ? 'Terminée' : 'Annulée'}
+                        </span>
+                    </td>
+                    <td>${formatDate(task.date_debut)}</td>
+                    <td>${formatDate(task.date_fin)}</td>
+                    <td>
+                        <div class="task-actions">
+                            <button class="btn btn-outline btn-sm" onclick="viewTaskDetails('${task.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${appState.currentUser?.role === 'secretaire' || appState.currentUser?.role === 'boss' ? `
+                                <button class="btn btn-outline btn-sm" onclick="editTask('${task.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline btn-sm" onclick="deleteTask('${task.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function applyFilters() {
+            appState.filters = {
+                status: document.getElementById('filterStatus').value,
+                priority: document.getElementById('filterPriority').value,
+                technician: document.getElementById('filterTechnician').value,
+                date: document.getElementById('filterDate').value
+            };
+            
+            loadTasks();
+        }
+        
+        function resetFilters() {
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterPriority').value = '';
+            document.getElementById('filterTechnician').value = '';
+            document.getElementById('filterDate').value = '';
+            
+            appState.filters = {
+                status: '',
+                priority: '',
+                technician: '',
+                date: ''
+            };
+            
+            loadTasks();
+        }
+        
+        async function loadTechnicians() {
+            showLoading();
+            
+            try {
+                const { data, error } = await supabase
+                    .from('utilisateurs')
+                    .select('*')
+                    .in('role', ['technicien', 'chef_projet'])
+                    .order('nom_complet');
+                
+                if (data) {
+                    renderTechniciansList(data);
+                }
+            } catch (error) {
+                console.error('Erreur de chargement des techniciens:', error);
+                showNotification('Erreur de chargement des techniciens', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function renderTechniciansList(technicians) {
+            const container = document.getElementById('techniciansList');
+            
+            if (!technicians.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>Aucun technicien trouvé</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = technicians.map(tech => `
+                <div class="technician-card">
+                    <div class="technician-avatar">
+                        ${tech.photo_url ? 
+                            `<img src="${tech.photo_url}" alt="${tech.nom_complet}">` : 
+                            `<div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">${tech.nom_complet.charAt(0)}</div>`
+                        }
+                    </div>
+                    <div class="technician-info">
+                        <h4>${tech.nom_complet}</h4>
+                        <p><i class="fas fa-envelope"></i> ${tech.email}</p>
+                        <p><i class="fas fa-phone"></i> ${tech.telephone || 'Non spécifié'}</p>
+                        <p>
+                            <i class="fas fa-user-tag"></i> 
+                            ${tech.role === 'chef_projet' ? 'Chef de projet' : 'Technicien'}
+                            <span class="status-badge status-${tech.statut}" style="margin-left: 10px;">
+                                ${tech.statut === 'actif' ? 'Actif' : tech.statut === 'inactif' ? 'Inactif' : 'En congé'}
+                            </span>
+                        </p>
+                        <div class="technician-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">${tech.taches_terminees || 0}</div>
+                                <div class="stat-label">Terminées</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${tech.taches_en_cours || 0}</div>
+                                <div class="stat-label">En cours</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function loadAdmin() {
+            showLoading();
+            
+            try {
+                const { data: users, error } = await supabase
+                    .from('utilisateurs')
+                    .select('*')
+                    .order('role, nom_complet');
+                
+                if (users) {
+                    renderUsersTable(users);
+                    
+                    // Mettre à jour les statistiques
+                    const totalUsers = users.length;
+                    const activeUsers = users.filter(u => u.statut === 'actif').length;
+                    
+                    document.getElementById('totalUsers').textContent = totalUsers;
+                    document.getElementById('activeUsers').textContent = activeUsers;
+                }
+            } catch (error) {
+                console.error('Erreur de chargement des utilisateurs:', error);
+                showNotification('Erreur de chargement des utilisateurs', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            ${user.photo_url ? 
+                                `<img src="${user.photo_url}" alt="${user.nom_complet}" style="width: 40px; height: 40px; border-radius: 50%;">` : 
+                                `<div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">${user.nom_complet.charAt(0)}</div>`
+                            }
+                            <div>
+                                <strong>${user.nom_complet}</strong><br>
+                                <small>${user.email}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${user.email}</td>
+                    <td>
+                        ${user.role === 'boss' ? 'Boss' : 
+                          user.role === 'secretaire' ? 'Secrétaire' : 
+                          user.role === 'chef_projet' ? 'Chef de projet' : 'Technicien'}
+                    </td>
+                    <td>
+                        <span class="status-badge status-${user.statut}">
+                            ${user.statut === 'actif' ? 'Actif' : user.statut === 'inactif' ? 'Inactif' : 'En congé'}
+                        </span>
+                    </td>
+                    <td>${user.taches_terminees || 0}</td>
+                    <td>
+                        <div class="task-actions">
+                            ${appState.currentUser?.role === 'boss' ? `
+                                <button class="btn btn-outline btn-sm" onclick="editUser('${user.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline btn-sm" onclick="deleteUser('${user.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        async function handleTaskSubmit(e) {
+            e.preventDefault();
+            showLoading();
+            
+            try {
+                const taskData = {
+                    titre: document.getElementById('taskTitle').value,
+                    description: document.getElementById('taskDescription').value,
+                    priorite: document.getElementById('taskPriority').value,
+                    technicien_id: document.getElementById('taskTechnician').value,
+                    chef_projet_id: document.getElementById('taskChefProjet').value || null,
+                    date_debut: document.getElementById('taskDateDebut').value,
+                    date_fin: document.getElementById('taskDateFin').value,
+                    besoin_pv: document.getElementById('taskBesoinPV').checked,
+                    secretaire_id: appState.currentUser.id,
+                    statut: 'en_attente'
+                };
+                
+                const { data, error } = await supabase
+                    .from('taches')
+                    .insert([taskData]);
+                
+                if (error) throw error;
+                
+                showNotification('Tâche créée avec succès!', 'success');
+                closeAllModals();
+                document.getElementById('taskForm').reset();
+                
+                // Recharger les données
+                if (appState.currentPage === 'dashboard') {
+                    loadDashboard();
+                } else if (appState.currentPage === 'tasks') {
+                    loadTasks();
+                }
+                
+            } catch (error) {
+                console.error('Erreur de création de tâche:', error);
+                showNotification('Erreur de création de tâche', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function handleTechnicianSubmit(e) {
+            e.preventDefault();
+            showLoading();
+            
+            try {
+                const techData = {
+                    nom_complet: document.getElementById('techNom').value,
+                    email: document.getElementById('techEmail').value,
+                    telephone: document.getElementById('techTelephone').value,
+                    role: document.getElementById('techRole').value,
+                    adresse: document.getElementById('techAdresse').value,
+                    date_embauche: document.getElementById('techDateEmbauche').value || null,
+                    statut: document.getElementById('techStatut').value
+                };
+                
+                // Gérer l'upload de photo si présent
+                const photoInput = document.getElementById('techPhoto');
+                if (photoInput.files.length > 0) {
+                    // Dans une vraie application, uploader l'image vers Supabase Storage
+                    // Pour cette démo, nous utilisons une URL temporaire
+                    const file = photoInput.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onloadend = async () => {
+                        techData.photo_url = reader.result;
+                        
+                        const { data, error } = await supabase
+                            .from('utilisateurs')
+                            .insert([techData]);
+                        
+                        if (error) throw error;
+                        
+                        showNotification('Technicien ajouté avec succès!', 'success');
+                        closeAllModals();
+                        document.getElementById('technicianForm').reset();
+                        document.getElementById('photoPreview').innerHTML = '';
+                        
+                        // Recharger les données
+                        if (appState.currentPage === 'technicians') {
+                            loadTechnicians();
+                        } else if (appState.currentPage === 'dashboard') {
+                            loadDashboard();
+                        }
+                        
+                        hideLoading();
+                    };
+                    
+                    reader.readAsDataURL(file);
+                } else {
+                    const { data, error } = await supabase
+                        .from('utilisateurs')
+                        .insert([techData]);
+                    
+                    if (error) throw error;
+                    
+                    showNotification('Technicien ajouté avec succès!', 'success');
+                    closeAllModals();
+                    document.getElementById('technicianForm').reset();
+                    
+                    // Recharger les données
+                    if (appState.currentPage === 'technicians') {
+                        loadTechnicians();
+                    } else if (appState.currentPage === 'dashboard') {
+                        loadDashboard();
+                    }
+                    
+                    hideLoading();
+                }
+                
+            } catch (error) {
+                console.error('Erreur d\'ajout de technicien:', error);
+                showNotification('Erreur d\'ajout de technicien', 'error');
+                hideLoading();
+            }
+        }
+        
+        function handlePhotoUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const preview = document.getElementById('photoPreview');
+                preview.innerHTML = `
+                    <div class="file-preview-item">
+                        <img src="${reader.result}" alt="Preview">
+                        <button onclick="removePhoto()" style="position: absolute; top: 5px; right: 5px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer;">×</button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function removePhoto() {
+            document.getElementById('techPhoto').value = '';
+            document.getElementById('photoPreview').innerHTML = '';
+        }
+        
+        async function viewTaskDetails(taskId) {
+            showLoading();
+            
+            try {
+                const { data: task, error } = await supabase
+                    .from('taches')
+                    .select('*, technicien:utilisateurs(*), chef_projet:utilisateurs!taches_chef_projet_id_fkey(*), secretaire:utilisateurs!taches_secretaire_id_fkey(*)')
+                    .eq('id', taskId)
+                    .single();
+                
+                if (error) throw error;
+                
+                // Récupérer les PV associés
+                const { data: pvs, error: pvError } = await supabase
+                    .from('preuves_travail')
+                    .select('*, technicien:utilisateurs(*), valide_par:utilisateurs!preuves_travail_valide_par_fkey(*)')
+                    .eq('tache_id', taskId);
+                
+                const content = document.getElementById('taskDetailsContent');
+                content.innerHTML = `
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 1rem;">${task.titre}</h3>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                            <span class="task-priority priority-${task.priorite}">
+                                ${task.priorite === 'haute' ? 'Haute' : task.priorite === 'urgente' ? 'Urgente' : task.priorite === 'moyenne' ? 'Moyenne' : 'Basse'}
+                            </span>
+                            <span class="status-badge status-${task.statut}">
+                                ${task.statut === 'en_attente' ? 'En attente' : 
+                                  task.statut === 'en_cours' ? 'En cours' : 
+                                  task.statut === 'terminee' ? 'Terminée' : 'Annulée'}
+                            </span>
+                            ${task.besoin_pv ? '<span class="status-badge" style="background-color: rgba(67, 97, 238, 0.1); color: var(--primary);"><i class="fas fa-camera"></i> PV requis</span>' : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Assigné à:</label>
+                            <div style="padding: 10px; background: var(--light); border-radius: var(--radius-sm);">
+                                ${task.technicien ? task.technicien.nom_complet : 'Non assigné'}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Chef de projet:</label>
+                            <div style="padding: 10px; background: var(--light); border-radius: var(--radius-sm);">
+                                ${task.chef_projet ? task.chef_projet.nom_complet : 'Non assigné'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date de début:</label>
+                            <div style="padding: 10px; background: var(--light); border-radius: var(--radius-sm);">
+                                ${formatDate(task.date_debut)}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Date de fin prévue:</label>
+                            <div style="padding: 10px; background: var(--light); border-radius: var(--radius-sm);">
+                                ${formatDate(task.date_fin)}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${task.description ? `
+                        <div class="form-group">
+                            <label>Description:</label>
+                            <div style="padding: 10px; background: var(--light); border-radius: var(--radius-sm); min-height: 100px;">
+                                ${task.description}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${task.note_technicien ? `
+                        <div class="form-group">
+                            <label>Notes du technicien:</label>
+                            <div style="padding: 10px; background: var(--light); border-radius: var(--radius-sm); min-height: 100px;">
+                                ${task.note_technicien}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${task.probleme_rencontre ? `
+                        <div class="form-group">
+                            <label>Problèmes rencontrés:</label>
+                            <div style="padding: 10px; background: var(--light); border-radius: var(--radius-sm); min-height: 100px;">
+                                ${task.probleme_rencontre}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${pvs && pvs.length > 0 ? `
+                        <div class="form-group">
+                            <label>Preuves de travail:</label>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                                ${pvs.map(pv => `
+                                    <div style="border: 1px solid var(--light-gray); border-radius: var(--radius-sm); overflow: hidden;">
+                                        <img src="${pv.image_url}" alt="PV" style="width: 100%; height: 150px; object-fit: cover;">
+                                        <div style="padding: 10px;">
+                                            <small>${formatDate(pv.date_soumission)}</small>
+                                            <div style="display: flex; align-items: center; gap: 5px; margin-top: 5px;">
+                                                ${pv.valide ? 
+                                                    '<span style="color: var(--success);"><i class="fas fa-check-circle"></i> Validé</span>' : 
+                                                    '<span style="color: var(--warning);"><i class="fas fa-clock"></i> En attente</span>'
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="form-group" style="margin-top: 2rem;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            ${(appState.currentUser?.role === 'technicien' && task.technicien_id === appState.currentUser.id && task.statut !== 'terminee') ? `
+                                <button class="btn btn-primary" onclick="updateTaskStatus('${task.id}', 'en_cours')">
+                                    <i class="fas fa-play"></i> Démarrer
+                                </button>
+                                <button class="btn btn-warning" onclick="updateTaskStatus('${task.id}', 'en_pause')">
+                                    <i class="fas fa-pause"></i> Mettre en pause
+                                </button>
+                                ${task.besoin_pv ? `
+                                    <button class="btn btn-success" onclick="submitPV('${task.id}')">
+                                        <i class="fas fa-camera"></i> Soumettre PV
+                                    </button>
+                                ` : `
+                                    <button class="btn btn-success" onclick="completeTask('${task.id}')">
+                                        <i class="fas fa-check"></i> Terminer
+                                    </button>
+                                `}
+                            ` : ''}
+                            
+                            ${(appState.currentUser?.role === 'chef_projet' && task.chef_projet_id === appState.currentUser.id && task.statut !== 'terminee') ? `
+                                <button class="btn btn-success" onclick="completeTask('${task.id}')">
+                                    <i class="fas fa-check"></i> Valider la tâche
+                                </button>
+                            ` : ''}
+                            
+                            ${(appState.currentUser?.role === 'secretaire' || appState.currentUser?.role === 'boss') ? `
+                                <button class="btn btn-primary" onclick="editTask('${task.id}')">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </button>
+                                <button class="btn btn-warning" onclick="sendMessageToTechnician('${task.id}', '${task.technicien_id}')">
+                                    <i class="fas fa-envelope"></i> Envoyer message
+                                </button>
+                                ${task.statut !== 'terminee' ? `
+                                    <button class="btn btn-danger" onclick="deleteTask('${task.id}')">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </button>
+                                ` : ''}
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                openModal('taskDetailsModal');
+                
+            } catch (error) {
+                console.error('Erreur de chargement des détails:', error);
+                showNotification('Erreur de chargement des détails', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            
+            // Charger les données si nécessaire
+            if (modalId === 'taskModal') {
+                loadTechniciansForTaskModal();
+            }
+        }
+        
+        function closeAllModals() {
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+        
+        async function loadTechniciansForTaskModal() {
+            try {
+                const { data, error } = await supabase
+                    .from('utilisateurs')
+                    .select('id, nom_complet, role')
+                    .in('role', ['technicien', 'chef_projet'])
+                    .eq('statut', 'actif')
+                    .order('nom_complet');
+                
+                if (data) {
+                    const techSelect = document.getElementById('taskTechnician');
+                    const chefSelect = document.getElementById('taskChefProjet');
+                    
+                    techSelect.innerHTML = '<option value="">Sélectionnez un technicien</option>';
+                    chefSelect.innerHTML = '<option value="">Sélectionnez un chef de projet</option>';
+                    
+                    data.forEach(user => {
+                        if (user.role === 'technicien') {
+                            techSelect.innerHTML += `<option value="${user.id}">${user.nom_complet}</option>`;
+                        }
+                        if (user.role === 'chef_projet') {
+                            chefSelect.innerHTML += `<option value="${user.id}">${user.nom_complet}</option>`;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur de chargement des techniciens:', error);
+            }
+        }
+        
+        // Fonctions globales
+        window.viewTaskDetails = viewTaskDetails;
+        window.editTask = async function(taskId) {
+            // Implémentez la modification de tâche
+            showNotification('Fonctionnalité à implémenter', 'warning');
+        };
+        
+        window.deleteTask = async function(taskId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette tâche?')) return;
+            
+            showLoading();
+            try {
+                const { error } = await supabase
+                    .from('taches')
+                    .delete()
+                    .eq('id', taskId);
+                
+                if (error) throw error;
+                
+                showNotification('Tâche supprimée avec succès', 'success');
+                
+                // Recharger les données
+                if (appState.currentPage === 'dashboard') {
+                    loadDashboard();
+                } else if (appState.currentPage === 'tasks') {
+                    loadTasks();
+                }
+                
+                closeAllModals();
+            } catch (error) {
+                console.error('Erreur de suppression:', error);
+                showNotification('Erreur de suppression', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+        
+        window.updateTaskStatus = async function(taskId, status) {
+            showLoading();
+            try {
+                const { error } = await supabase
+                    .from('taches')
+                    .update({ statut: status })
+                    .eq('id', taskId);
+                
+                if (error) throw error;
+                
+                showNotification('Statut mis à jour', 'success');
+                viewTaskDetails(taskId);
+                
+                // Recharger le tableau de bord si nécessaire
+                if (appState.currentPage === 'dashboard') {
+                    loadDashboard();
+                }
+            } catch (error) {
+                console.error('Erreur de mise à jour:', error);
+                showNotification('Erreur de mise à jour', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+        
+        window.submitPV = function(taskId) {
+            document.getElementById('pvTaskId').value = taskId;
+            openModal('pvModal');
+        };
+        
+        window.completeTask = async function(taskId) {
+            if (!confirm('Marquer cette tâche comme terminée?')) return;
+            
+            showLoading();
+            try {
+                const { error } = await supabase
+                    .from('taches')
+                    .update({ 
+                        statut: 'terminee',
+                        date_fin_reelle: new Date().toISOString()
+                    })
+                    .eq('id', taskId);
+                
+                if (error) throw error;
+                
+                showNotification('Tâche marquée comme terminée', 'success');
+                closeAllModals();
+                
+                // Recharger les données
+                if (appState.currentPage === 'dashboard') {
+                    loadDashboard();
+                } else if (appState.currentPage === 'tasks') {
+                    loadTasks();
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification('Erreur', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+        
+        window.sendMessageToTechnician = function(taskId, technicianId) {
+            document.getElementById('messageTaskId').value = taskId;
+            openModal('messageModal');
+        };
+        
+        window.editUser = function(userId) {
+            // Implémentez la modification d'utilisateur
+            showNotification('Fonctionnalité à implémenter', 'warning');
+        };
+        
+        window.deleteUser = async function(userId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur?')) return;
+            
+            showLoading();
+            try {
+                const { error } = await supabase
+                    .from('utilisateurs')
+                    .delete()
+                    .eq('id', userId);
+                
+                if (error) throw error;
+                
+                showNotification('Utilisateur supprimé avec succès', 'success');
+                loadAdmin();
+            } catch (error) {
+                console.error('Erreur de suppression:', error);
+                showNotification('Erreur de suppression', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+        
+        // Helper functions
+        function formatDate(dateString) {
+            if (!dateString) return 'Non spécifiée';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        // Initialiser les écouteurs d'événements pour les formulaires de modal
+        document.getElementById('pvForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showLoading();
+            
+            const taskId = document.getElementById('pvTaskId').value;
+            const description = document.getElementById('pvDescription').value;
+            const probleme = document.getElementById('pvProbleme').value;
+            
+            // Dans une vraie application, uploader l'image vers Supabase Storage
+            const fileInput = document.getElementById('pvImage');
+            if (!fileInput.files.length) {
+                showNotification('Veuillez sélectionner une image', 'error');
+                hideLoading();
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onloadend = async () => {
+                try {
+                    const pvData = {
+                        tache_id: taskId,
+                        technicien_id: appState.currentUser.id,
+                        image_url: reader.result,
+                        description: description,
+                        probleme_rencontre: probleme,
+                        valide: false
+                    };
+                    
+                    const { error } = await supabase
+                        .from('preuves_travail')
+                        .insert([pvData]);
+                    
+                    if (error) throw error;
+                    
+                    // Mettre à jour le statut de la tâche
+                    const { error: taskError } = await supabase
+                        .from('taches')
+                        .update({ statut: 'en_attente_validation' })
+                        .eq('id', taskId);
+                    
+                    if (taskError) throw taskError;
+                    
+                    showNotification('PV soumis avec succès', 'success');
+                    closeAllModals();
+                    document.getElementById('pvForm').reset();
+                    document.getElementById('pvPreview').innerHTML = '';
+                    
+                    // Recharger les données
+                    if (appState.currentPage === 'dashboard') {
+                        loadDashboard();
+                    }
+                    
+                } catch (error) {
+                    console.error('Erreur de soumission du PV:', error);
+                    showNotification('Erreur de soumission du PV', 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+            
+            reader.readAsDataURL(file);
+        });
+        
+        document.getElementById('messageForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showLoading();
+            
+            const taskId = document.getElementById('messageTaskId').value;
+            const content = document.getElementById('messageContent').value;
+            
+            try {
+                // Récupérer le technicien assigné à la tâche
+                const { data: task, error: taskError } = await supabase
+                    .from('taches')
+                    .select('technicien_id')
+                    .eq('id', taskId)
+                    .single();
+                
+                if (taskError) throw taskError;
+                
+                const messageData = {
+                    tache_id: taskId,
+                    expediteur_id: appState.currentUser.id,
+                    destinataire_id: task.technicien_id,
+                    contenu: content
+                };
+                
+                const { error } = await supabase
+                    .from('messages')
+                    .insert([messageData]);
+                
+                if (error) throw error;
+                
+                showNotification('Message envoyé avec succès', 'success');
+                closeAllModals();
+                document.getElementById('messageForm').reset();
+                
+            } catch (error) {
+                console.error('Erreur d\'envoi du message:', error);
+                showNotification('Erreur d\'envoi du message', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+        
+        // Initialiser l'upload de PV
+        document.getElementById('pvUpload')?.addEventListener('click', () => {
+            document.getElementById('pvImage').click();
+        });
+        
+        document.getElementById('pvImage')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const preview = document.getElementById('pvPreview');
+                preview.innerHTML = `
+                    <div class="file-preview-item">
+                        <img src="${reader.result}" alt="Preview">
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        });
+    </script>
 </body>
 </html>
